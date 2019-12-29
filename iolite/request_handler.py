@@ -1,6 +1,6 @@
+import random
 import string
 from enum import Enum
-from random import random
 
 
 class ClassMap(Enum):
@@ -22,7 +22,7 @@ class RequestHandler:
     def get_subscribe_request(self) -> dict:
         request = self._build_request('places', {
             'modelID': 'http://iolite.de#Environment',
-            'class': ClassMap.SubscribeRequest.valu,
+            'class': ClassMap.SubscribeRequest.value,
             'objectQuery': 'places',
             'callback': '',
             'minimumUpdateInterval': 100,
@@ -57,9 +57,8 @@ class RequestHandler:
 
     def _get_request_id(self, prefix: str) -> str:
         letters = string.ascii_letters
-        request_id = ''.join(random.choice(letters) for i in range(10))
-        request_id =  f'{prefix}_{request_id}'
-
         while True:
+            request_id = ''.join(random.choice(letters) for i in range(10))
+            request_id = f'{prefix}_{request_id}'
             if request_id not in self.request_stack:
-                return self._get_request_id(prefix)
+                return request_id

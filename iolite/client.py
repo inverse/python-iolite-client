@@ -55,9 +55,9 @@ async def handler():
         await websocket.send(request)
         logging.info(f'Request sent {request}', extra={'request': request})
 
-        response = await websocket.recv()
-        logging.info(f'Response received {response}', extra={'response': response})
-        response_handler(response)
+        async for response in websocket:
+            logging.info(f'Response received {response}', extra={'response': response})
+            response_handler(response)
 
 
 asyncio.get_event_loop().run_until_complete(handler())
