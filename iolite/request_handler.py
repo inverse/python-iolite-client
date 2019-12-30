@@ -1,5 +1,6 @@
 import random
 import string
+import time
 from enum import Enum
 
 
@@ -46,10 +47,27 @@ class RequestHandler:
 
         return request
 
+    def get_query_request(self):
+        request = self._build_request(ClassMap.QueryRequest.value, {
+            'modelID': 'http://iolite.de#Environment',
+            'class': ClassMap.QueryRequest.value,
+            'query': 'situationProfileModel',
+        })
+
+        return request
+
+    def get_keepalive_request(self):
+        response = {
+            'class': ClassMap.KeepAliveResponse.value,
+            'responseAt': int(round(time.time() * 1000)),
+        }
+
+        return response
+
     def _build_request(self, prefix: str, request: dict) -> dict:
         request_id = self._get_request_id(prefix)
 
-        request.update({'RequestID': request_id})
+        request.update({'requestID': request_id})
 
         self.request_stack[request_id] = request
 
