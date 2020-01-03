@@ -2,13 +2,13 @@
 
 import asyncio
 import os
+from typing import NoReturn
 
 import websockets
 import json
 import logging
 
 from environs import Env
-from enum import Enum
 from base64 import b64encode
 
 from iolite.request_handler import ClassMap, RequestHandler
@@ -30,7 +30,7 @@ headers = {'Authorization': f'Basic {user_pass}'}
 request_handler = RequestHandler()
 
 
-async def response_handler(response: str, websocket):
+async def response_handler(response: str, websocket) -> NoReturn:
     response_dict = json.loads(response)
     response_class = response_dict.get('class')
 
@@ -48,13 +48,13 @@ async def response_handler(response: str, websocket):
         logging.error(f'Unsupported response {response_dict}', extra={'response_class': response_class})
 
 
-async def send_request(request: dict, websocket):
+async def send_request(request: dict, websocket) -> NoReturn:
     request = json.dumps(request)
     await websocket.send(request)
     logging.info(f'Request sent {request}', extra={'request': request})
 
 
-async def handler():
+async def handler() -> NoReturn:
     uri = f'wss://remote.iolite.de/bus/websocket/application/json?SID={SID}'
     async with websockets.connect(uri, extra_headers=headers) as websocket:
         request = request_handler.get_subscribe_request()

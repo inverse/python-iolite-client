@@ -47,7 +47,7 @@ class RequestHandler:
 
         return request
 
-    def get_query_request(self):
+    def get_query_request(self) -> dict:
         request = self._build_request(ClassMap.QueryRequest.value, {
             'modelID': 'http://iolite.de#Environment',
             'class': ClassMap.QueryRequest.value,
@@ -56,7 +56,7 @@ class RequestHandler:
 
         return request
 
-    def get_keepalive_request(self):
+    def get_keepalive_request(self) -> dict:
         response = {
             'class': ClassMap.KeepAliveResponse.value,
             'responseAt': int(round(time.time() * 1000)),
