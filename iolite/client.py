@@ -1,13 +1,10 @@
-#!/usr/bin/env python
-
 import asyncio
 import os
-from typing import NoReturn
-
 import websockets
 import json
 import logging
 
+from typing import NoReturn
 from environs import Env
 from base64 import b64encode
 

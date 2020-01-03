@@ -16,7 +16,6 @@ class ClassMap(Enum):
 
 
 class RequestHandler:
-
     def __init__(self):
         self.request_stack = {}
 
@@ -56,7 +55,8 @@ class RequestHandler:
 
         return request
 
-    def get_keepalive_request(self) -> dict:
+    @staticmethod
+    def get_keepalive_request() -> dict:
         response = {
             'class': ClassMap.KeepAliveResponse.value,
             'responseAt': int(round(time.time() * 1000)),
