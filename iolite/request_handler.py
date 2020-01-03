@@ -30,11 +30,11 @@ class RequestHandler:
 
         return request
 
-    def get_action_request(self, room: str, temp: int) -> dict:
+    def get_action_request(self, device_id: str, temp: int) -> dict:
         request = self._build_request(ClassMap.ActionRequest.value, {
             'modelID': 'http://iolite.de#Environment',
             'class': ClassMap.ActionRequest.value,
-            'objectQuery': f"devices[id='{room}']/properties[name='heatingTemperatureSetting']",
+            'objectQuery': f"devices[id='{device_id}']/properties[name='heatingTemperatureSetting']",
             'actionName': 'requestValueUpdate',
             'parameters': [
                 {
