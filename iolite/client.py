@@ -26,6 +26,10 @@ headers = {'Authorization': f'Basic {user_pass}'}
 
 request_handler = RequestHandler()
 
+BASE_URL = 'wss://remote.iolite.de'
+
+DISCOVERED = {}
+
 
 async def response_handler(response: str, websocket) -> NoReturn:
     response_dict = json.loads(response)
@@ -33,9 +37,22 @@ async def response_handler(response: str, websocket) -> NoReturn:
 
     if response_class == ClassMap.SubscribeSuccess.value:
         logging.info('Handling SubscribeSuccess')
-        for device in response_dict.get('initialValues'):
-            logging.info(f'Setting up {device["placeName"]}')
-    if response_class == ClassMap.QuerySuccess.value:
+        for value in response_dict.get('initialValues'):
+            if value.get('placeName'):
+                room_name = value.get('placeName')
+                room_id = value.get('id')
+                logging.info(f'Setting up {room_name}')
+                DISCOVERED[room_id] = {
+                    'name': room_name,
+                    'devices': {},
+                }
+            elif value.get('placeIdentifier'):
+                room_id = value.get('placeIdentifier')
+                DISCOVERED[room_id]['devices'].update({
+                    'id': value.get('id'),
+                    'name': value.get('friendlyName'),
+                })
+    elif response_class == ClassMap.QuerySuccess.value:
         logging.info('Handling QuerySuccess')
     elif response_class == ClassMap.KeepAliveRequest.value:
         logging.info('Handling KeepAliveRequest')
@@ -52,12 +69,17 @@ async def send_request(request: dict, websocket) -> NoReturn:
 
 
 async def handler() -> NoReturn:
-    uri = f'wss://remote.iolite.de/bus/websocket/application/json?SID={SID}'
+    uri = f'{BASE_URL}/bus/websocket/application/json?SID={SID}'
     async with websockets.connect(uri, extra_headers=headers) as websocket:
-        request = request_handler.get_subscribe_request()
+        request = request_handler.get_subscribe_request('places')
         await send_request(request, websocket)
 
-        request = request_handler.get_query_request()
+        await asyncio.sleep(1)
+
+        request = request_handler.get_subscribe_request('devices')
+        await send_request(request, websocket)
+
+        request = request_handler.get_query_request('situationProfileModel')
         await send_request(request, websocket)
 
         async for response in websocket:

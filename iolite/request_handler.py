@@ -19,11 +19,11 @@ class RequestHandler:
     def __init__(self):
         self.request_stack = {}
 
-    def get_subscribe_request(self) -> dict:
+    def get_subscribe_request(self, object_query: str) -> dict:
         request = self._build_request('places', {
             'modelID': 'http://iolite.de#Environment',
             'class': ClassMap.SubscribeRequest.value,
-            'objectQuery': 'places',
+            'objectQuery': object_query,
             'callback': '',
             'minimumUpdateInterval': 100,
         })
@@ -46,11 +46,11 @@ class RequestHandler:
 
         return request
 
-    def get_query_request(self) -> dict:
+    def get_query_request(self, query: str) -> dict:
         request = self._build_request(ClassMap.QueryRequest.value, {
             'modelID': 'http://iolite.de#Environment',
             'class': ClassMap.QueryRequest.value,
-            'query': 'situationProfileModel',
+            'query': query,
         })
 
         return request
