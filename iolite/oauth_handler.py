@@ -3,7 +3,6 @@ from urllib.parse import urlencode
 import requests
 import logging
 
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger()
 
 
@@ -26,7 +25,8 @@ class OAuthHandler:
         try:
             response = requests.post(f'{self.BASE_URL}/ui/token?{query}', auth=(self.username, self.password))
             response.raise_for_status()
-            return json.loads(response.text)
+            json_dict = json.loads(response.text)
+            return json_dict
         except Exception as e:
             logger.exception(e)
 
@@ -40,7 +40,8 @@ class OAuthHandler:
         try:
             response = requests.post(f'{self.BASE_URL}/ui/token?{query}', auth=(self.username, self.password))
             response.raise_for_status()
-            return json.loads(response.text)
+            json_dict = json.loads(response.text)
+            return json_dict
         except Exception as e:
             logger.exception(e)
 
@@ -52,6 +53,7 @@ class OAuthHandler:
         try:
             response = requests.get(f'{self.BASE_URL}/ui/sid?{query}', auth=(self.username, self.password))
             response.raise_for_status()
-            return json.loads(response.text).get('SID')
+            json_dict = json.loads(response.text)
+            return json_dict.get('SID')
         except Exception as e:
             logger.exception(e)
