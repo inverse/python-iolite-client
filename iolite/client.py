@@ -65,6 +65,8 @@ async def response_handler(response: str, websocket) -> NoReturn:
                 if room_id not in DISCOVERED:
                     continue
 
+                logging.info(f'Adding {value.get("friendlyName")} to {DISCOVERED[room_id]["name"]}')
+
                 DISCOVERED[room_id]['devices'].update({
                     'id': value.get('id'),
                     'name': value.get('friendlyName'),
