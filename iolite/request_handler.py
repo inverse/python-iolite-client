@@ -2,6 +2,7 @@ import random
 import string
 import time
 from enum import Enum
+from typing import Optional
 
 
 class ClassMap(Enum):
@@ -20,7 +21,7 @@ class RequestHandler:
         self.request_stack = {}
 
     def get_subscribe_request(self, object_query: str) -> dict:
-        request = self._build_request('places', {
+        request = self._build_request(object_query, {
             'modelID': 'http://iolite.de#Environment',
             'class': ClassMap.SubscribeRequest.value,
             'objectQuery': object_query,
@@ -63,6 +64,9 @@ class RequestHandler:
         }
 
         return response
+
+    def get_request(self, request_id: str) -> Optional[dict]:
+        return self.request_stack.get(request_id)
 
     def _build_request(self, prefix: str, request: dict) -> dict:
         request_id = self._get_request_id(prefix)

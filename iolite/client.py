@@ -35,10 +35,16 @@ async def response_handler(response: str, websocket) -> NoReturn:
     response_dict = json.loads(response)
     response_class = response_dict.get('class')
 
+    request = request_handler.get_request(response_dict.get('requestID'))
+
+    if request is None:
+        raise Exception('No matching request found')
+
     if response_class == ClassMap.SubscribeSuccess.value:
         logging.info('Handling SubscribeSuccess')
-        for value in response_dict.get('initialValues'):
-            if value.get('placeName'):
+
+        if response_dict.get('requestID').startswith('places'):
+            for value in response_dict.get('initialValues'):
                 room_name = value.get('placeName')
                 room_id = value.get('id')
                 logging.info(f'Setting up {room_name}')
@@ -46,12 +52,15 @@ async def response_handler(response: str, websocket) -> NoReturn:
                     'name': room_name,
                     'devices': {},
                 }
-            elif value.get('placeIdentifier'):
+
+        if response_dict.get('requestID').startswith('devices'):
+            for value in response_dict.get('initialValues'):
                 room_id = value.get('placeIdentifier')
                 DISCOVERED[room_id]['devices'].update({
                     'id': value.get('id'),
                     'name': value.get('friendlyName'),
                 })
+
     elif response_class == ClassMap.QuerySuccess.value:
         logging.info('Handling QuerySuccess')
     elif response_class == ClassMap.KeepAliveRequest.value:
@@ -67,6 +76,10 @@ async def send_request(request: dict, websocket) -> NoReturn:
     await websocket.send(request)
     logging.info(f'Request sent {request}', extra={'request': request})
 
+
+# TODO: Map to basic API
+# - setup
+# - update
 
 async def handler() -> NoReturn:
     uri = f'{BASE_URL}/bus/websocket/application/json?SID={SID}'
