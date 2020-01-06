@@ -8,6 +8,7 @@ from typing import NoReturn
 from environs import Env
 from base64 import b64encode
 
+from iolite.oauth_handler import OAuthHandler
 from iolite.request_handler import ClassMap, RequestHandler
 
 logging.basicConfig(level=logging.INFO)
@@ -17,7 +18,7 @@ env.read_env()
 
 USERNAME = os.getenv('USERNAME')
 PASSWORD = os.getenv('PASSWORD')
-SID = os.getenv('SID')
+ACCESS_TOKEN = os.getenv('ACCESS_TOKEN')
 
 user_pass = f'{USERNAME}:{PASSWORD}'
 
@@ -25,6 +26,10 @@ user_pass = b64encode(user_pass.encode()).decode('ascii')
 headers = {'Authorization': f'Basic {user_pass}'}
 
 request_handler = RequestHandler()
+
+oauth_handler = OAuthHandler(USERNAME, PASSWORD)
+
+SID = oauth_handler.get_sid(ACCESS_TOKEN)
 
 BASE_URL = 'wss://remote.iolite.de'
 
@@ -56,6 +61,10 @@ async def response_handler(response: str, websocket) -> NoReturn:
         if response_dict.get('requestID').startswith('devices'):
             for value in response_dict.get('initialValues'):
                 room_id = value.get('placeIdentifier')
+
+                if room_id not in DISCOVERED:
+                    continue
+
                 DISCOVERED[room_id]['devices'].update({
                     'id': value.get('id'),
                     'name': value.get('friendlyName'),

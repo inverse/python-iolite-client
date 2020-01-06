@@ -52,6 +52,6 @@ class OAuthHandler:
         try:
             response = requests.get(f'{self.BASE_URL}/ui/sid?{query}', auth=(self.username, self.password))
             response.raise_for_status()
-            return json.loads(response.text)
+            return json.loads(response.text).get('SID')
         except Exception as e:
             logger.exception(e)
