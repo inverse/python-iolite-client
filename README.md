@@ -17,8 +17,8 @@ Open your Deutsche Wohnen tablet and begin pairing device process. Scan QR code 
 {"webApp":"/ui/","code":"<redacted>","basicAuth":"<redacted>"}
 ```
 
-`basicAuth` contains base64 encoded HTTP basic username and password.
-`code` is the pairing code
+- `basicAuth` contains base64 encoded HTTP basic username and password.
+- `code` is the pairing code
 
 # Setup
 
