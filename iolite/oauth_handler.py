@@ -89,7 +89,7 @@ class OAuthWrapper:
             self.oauth_storage.store_access_token(access_token)
 
         expires_at = access_token['expires_at']
-        
+
         if expires_at < time.time():
             refreshed_token = self.oauth_handler.get_refresh_token(access_token['refresh_token'])
             self.oauth_storage.store_access_token(refreshed_token)
