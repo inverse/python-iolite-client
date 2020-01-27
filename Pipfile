@@ -9,6 +9,7 @@ verify_ssl = true
 websockets = "*"
 environs = "*"
 requests = "*"
+pylama = "*"
 
 [requires]
 python_version = "3.8"
