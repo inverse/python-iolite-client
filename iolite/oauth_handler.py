@@ -1,9 +1,16 @@
 import json
+import os
+import time
 from urllib.parse import urlencode
+from typing import TypeVar, Optional
+
 import requests
 import logging
 
 logger = logging.getLogger()
+
+OAuthHandlerType = TypeVar('OAuthHandlerType', bound='OAuthHandler')
+OAuthStorageType = TypeVar('OAuthStorageType', bound='OAuthStorage')
 
 
 class OAuthHandler:
@@ -14,7 +21,7 @@ class OAuthHandler:
         self.username = username
         self.password = password
 
-    def get_access_token(self, code: str, name: str):
+    def get_access_token(self, code: str, name: str) -> dict:
         query = urlencode({
             'client_id': self.CLIENT_ID,
             'grant_type': 'authorization_code',
@@ -30,7 +37,7 @@ class OAuthHandler:
         except Exception as e:
             logger.exception(e)
 
-    def get_refresh_token(self, refresh_token: str):
+    def get_refresh_token(self, refresh_token: str) -> dict:
         query = urlencode({
             'client_id': self.CLIENT_ID,
             'grant_type': 'refresh_token',
@@ -45,7 +52,7 @@ class OAuthHandler:
         except Exception as e:
             logger.exception(e)
 
-    def get_sid(self, access_token: str):
+    def get_sid(self, access_token: str) -> str:
         query = urlencode({
             'access_token': access_token,
         })
@@ -57,3 +64,74 @@ class OAuthHandler:
             return json_dict.get('SID')
         except Exception as e:
             logger.exception(e)
+
+
+class OAuthWrapper:
+    def __init__(self, oauth_handler: OAuthHandlerType, oauth_storage: OAuthStorageType):
+        self.oauth_handler = oauth_handler
+        self.oauth_storage = oauth_storage
+
+    def get_sid(self, code: str, name: str):
+        """
+        Get SID by providing the initial pairing code and the device name you would like to register.
+
+        :param code: The code provided in the QR code
+        :param name: The name of the device you want to register
+        :return:
+        """
+        access_token = self.oauth_storage.fetch_access_token()
+
+        if access_token is None:
+            access_token = self.oauth_handler.get_access_token(code, name)
+            self.oauth_storage.store_access_token(access_token)
+
+        expires_at = access_token['expires_at']
+        
+        if expires_at < time.time():
+            refresh_token = self.oauth_handler.get_refresh_token(access_token['refresh_token'])
+            self.oauth_storage.store_refresh_token(access_token) # TODO: Perhaps not needed
+            token = refresh_token['access_token']
+        else:
+            token = access_token['access_token']
+
+        return self.oauth_handler.get_sid(token)
+
+
+class OAuthStorage:
+
+    def __init__(self, path: str):
+        self.path = path
+
+    def store_access_token(self, payload: dict):
+        expires_at = time.time() + payload['expires_in']
+        payload.update({'expires_at': expires_at})
+        self.__store('access_token', payload)
+
+    def fetch_access_token(self) -> Optional[dict]:
+        return self.__fetch('access_token')
+
+    def store_refresh_token(self, payload: dict):
+        self.__store('refresh_token', payload)
+
+    def fetch_refresh_token(self) -> Optional[dict]:
+        return self.__fetch('refresh_token')
+
+    def __store(self, payload_type: str, payload: dict):
+        path = self.__get_path(payload_type)
+
+        with open(path, 'w') as f:
+            content = json.dumps(payload)
+            f.write(content)
+
+    def __fetch(self, payload_type: str) -> Optional[dict]:
+        path = self.__get_path(payload_type)
+
+        if not os.path.exists(path):
+            return None
+
+        with open(path) as f:
+            content = f.read()
+            return json.loads(content)
+
+    def __get_path(self, payload_type: str):
+        return os.path.join(self.path, f'{payload_type}.json')

@@ -8,17 +8,20 @@ from typing import NoReturn
 from environs import Env
 from base64 import b64encode
 
-from iolite.oauth_handler import OAuthHandler
+from iolite.oauth_handler import OAuthHandler, OAuthStorage, OAuthWrapper
 from iolite.request_handler import ClassMap, RequestHandler
 
 logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger()
+
 
 env = Env()
 env.read_env()
 
 USERNAME = os.getenv('USERNAME')
 PASSWORD = os.getenv('PASSWORD')
-ACCESS_TOKEN = os.getenv('ACCESS_TOKEN')
+CODE = os.getenv('CODE')
+NAME = os.getenv('NAME')
 
 user_pass = f'{USERNAME}:{PASSWORD}'
 
@@ -27,9 +30,10 @@ headers = {'Authorization': f'Basic {user_pass}'}
 
 request_handler = RequestHandler()
 
+oauth_storage = OAuthStorage('.')
 oauth_handler = OAuthHandler(USERNAME, PASSWORD)
-
-SID = oauth_handler.get_sid(ACCESS_TOKEN)
+oauth_wrapper = OAuthWrapper(oauth_handler, oauth_storage)
+sid = oauth_wrapper.get_sid(CODE, NAME)
 
 BASE_URL = 'wss://remote.iolite.de'
 
@@ -46,13 +50,13 @@ async def response_handler(response: str, websocket) -> NoReturn:
         raise Exception('No matching request found')
 
     if response_class == ClassMap.SubscribeSuccess.value:
-        logging.info('Handling SubscribeSuccess')
+        logger.info('Handling SubscribeSuccess')
 
         if response_dict.get('requestID').startswith('places'):
             for value in response_dict.get('initialValues'):
                 room_name = value.get('placeName')
                 room_id = value.get('id')
-                logging.info(f'Setting up {room_name}')
+                logger.info(f'Setting up {room_name}')
                 DISCOVERED[room_id] = {
                     'name': room_name,
                     'devices': {},
@@ -65,7 +69,7 @@ async def response_handler(response: str, websocket) -> NoReturn:
                 if room_id not in DISCOVERED:
                     continue
 
-                logging.info(f'Adding {value.get("friendlyName")} to {DISCOVERED[room_id]["name"]}')
+                logger.info(f'Adding {value.get("friendlyName")} to {DISCOVERED[room_id]["name"]}')
 
                 DISCOVERED[room_id]['devices'].update({
                     'id': value.get('id'),
@@ -73,19 +77,19 @@ async def response_handler(response: str, websocket) -> NoReturn:
                 })
 
     elif response_class == ClassMap.QuerySuccess.value:
-        logging.info('Handling QuerySuccess')
+        logger.info('Handling QuerySuccess')
     elif response_class == ClassMap.KeepAliveRequest.value:
-        logging.info('Handling KeepAliveRequest')
+        logger.info('Handling KeepAliveRequest')
         request = request_handler.get_keepalive_request()
         await send_request(request, websocket)
     else:
-        logging.error(f'Unsupported response {response_dict}', extra={'response_class': response_class})
+        logger.error(f'Unsupported response {response_dict}', extra={'response_class': response_class})
 
 
 async def send_request(request: dict, websocket) -> NoReturn:
     request = json.dumps(request)
     await websocket.send(request)
-    logging.info(f'Request sent {request}', extra={'request': request})
+    logger.info(f'Request sent {request}', extra={'request': request})
 
 
 # TODO: Map to basic API
@@ -93,7 +97,7 @@ async def send_request(request: dict, websocket) -> NoReturn:
 # - update
 
 async def handler() -> NoReturn:
-    uri = f'{BASE_URL}/bus/websocket/application/json?SID={SID}'
+    uri = f'{BASE_URL}/bus/websocket/application/json?SID={sid}'
     async with websockets.connect(uri, extra_headers=headers) as websocket:
         request = request_handler.get_subscribe_request('places')
         await send_request(request, websocket)
@@ -107,7 +111,7 @@ async def handler() -> NoReturn:
         await send_request(request, websocket)
 
         async for response in websocket:
-            logging.info(f'Response received {response}', extra={'response': response})
+            logger.info(f'Response received {response}', extra={'response': response})
             await response_handler(response, websocket)
 
 
