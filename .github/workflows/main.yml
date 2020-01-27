@@ -16,4 +16,4 @@ jobs:
     - name: Install pip dependencies
       run: pipenv install -d
     - name: Lint
-    - run: pylama
+      run: pylama
