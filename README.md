@@ -1,5 +1,7 @@
 # Python IOLite Client
 
+![CI](https://github.com/inverse/python-iolite-client/workflows/CI/badge.svg)
+
 WIP Python client for [IOLite's][0] remote API.
 
 Build by reverse engineering the [Deutsche Wohnen][2] [MIA Android App][1].
