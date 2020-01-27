@@ -36,6 +36,7 @@ class OAuthHandler:
             return json_dict
         except Exception as e:
             logger.exception(e)
+            raise e
 
     def get_refresh_token(self, refresh_token: str) -> dict:
         query = urlencode({
@@ -51,6 +52,7 @@ class OAuthHandler:
             return json_dict
         except Exception as e:
             logger.exception(e)
+            raise e
 
     def get_sid(self, access_token: str) -> str:
         query = urlencode({
@@ -64,6 +66,7 @@ class OAuthHandler:
             return json_dict.get('SID')
         except Exception as e:
             logger.exception(e)
+            raise e
 
 
 class OAuthWrapper:
@@ -88,9 +91,9 @@ class OAuthWrapper:
         expires_at = access_token['expires_at']
         
         if expires_at < time.time():
-            refresh_token = self.oauth_handler.get_refresh_token(access_token['refresh_token'])
-            self.oauth_storage.store_refresh_token(access_token) # TODO: Perhaps not needed
-            token = refresh_token['access_token']
+            refreshed_token = self.oauth_handler.get_refresh_token(access_token['refresh_token'])
+            self.oauth_storage.store_access_token(refreshed_token)
+            token = refreshed_token['access_token']
         else:
             token = access_token['access_token']
 
@@ -109,12 +112,6 @@ class OAuthStorage:
 
     def fetch_access_token(self) -> Optional[dict]:
         return self.__fetch('access_token')
-
-    def store_refresh_token(self, payload: dict):
-        self.__store('refresh_token', payload)
-
-    def fetch_refresh_token(self) -> Optional[dict]:
-        return self.__fetch('refresh_token')
 
     def __store(self, payload_type: str, payload: dict):
         path = self.__get_path(payload_type)
