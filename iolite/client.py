@@ -12,7 +12,7 @@ from iolite.oauth_handler import OAuthHandler, OAuthStorage, OAuthWrapper
 from iolite.request_handler import ClassMap, RequestHandler
 
 logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 
 env = Env()
 env.read_env()

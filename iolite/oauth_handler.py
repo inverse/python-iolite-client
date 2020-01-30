@@ -7,7 +7,7 @@ from typing import TypeVar, Optional
 import requests
 import logging
 
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 
 OAuthHandlerType = TypeVar('OAuthHandlerType', bound='OAuthHandler')
 OAuthStorageType = TypeVar('OAuthStorageType', bound='OAuthStorage')
