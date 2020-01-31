@@ -8,6 +8,7 @@ from typing import NoReturn
 from environs import Env
 from base64 import b64encode
 
+from iolite.entity import entity_factory
 from iolite.oauth_handler import OAuthHandler, OAuthStorage, OAuthWrapper
 from iolite.request_handler import ClassMap, RequestHandler
 
@@ -73,11 +74,10 @@ class IOLiteClient:
 
             if response_dict.get('requestID').startswith('places'):
                 for value in response_dict.get('initialValues'):
-                    room_name = value.get('placeName')
-                    room_id = value.get('id')
-                    logger.info(f'Setting up {room_name}')
-                    self.discovered[room_id] = {
-                        'name': room_name,
+                    room = entity_factory(value)
+                    logger.info(f'Setting up {room.name}')
+                    self.discovered[room.identifier] = {
+                        'name': room.name,
                         'devices': {},
                     }
 
@@ -88,6 +88,7 @@ class IOLiteClient:
                     if room_id not in self.discovered:
                         continue
 
+                    device = entity_factory(value)
                     logger.info(f'Adding {value.get("friendlyName")} to {self.discovered[room_id]["name"]}')
 
                     self.discovered[room_id]['devices'].update({
