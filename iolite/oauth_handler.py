@@ -10,7 +10,6 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-
 class OAuthHandler:
     BASE_URL = 'https://remote.iolite.de'
     CLIENT_ID = 'deuwo_mia_app'

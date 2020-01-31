@@ -20,9 +20,10 @@ class Switch(Device):
 
 class RadiatorValve(Device):
 
-    def __init__(self, identifier: str, name: str, current_env_temp: float, battery_level: int, heating_mode: str,
+    def __init__(self, identifier: str, name: str, manufacturer: str, current_env_temp: float, battery_level: int,
+                 heating_mode: str,
                  valve_position: str):
-        super().__init__(identifier, name)
+        super().__init__(identifier, name, manufacturer)
         self.valve_position = valve_position
         self.heating_mode = heating_mode
         self.battery_level = battery_level
@@ -51,6 +52,7 @@ def entity_factory(payload: dict) -> Optional[Entity]:
         return RadiatorValve(
             payload.get('id'),
             payload.get('friendlyName'),
+            payload.get('manufacturer'),
             current_env_temp,
             battery_level,
             heating_mode,
@@ -63,4 +65,4 @@ def __get_prop(properties: list, key: str):
     value = None
     if len(result) != 0:
         value = result[0]
-    return value
+    return value.get('value')
