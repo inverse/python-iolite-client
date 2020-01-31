@@ -13,6 +13,7 @@ class Device(Entity):
         super().__init__(identifier, name)
         self.manufacturer = manufacturer
 
+
 class Switch(Device):
     pass
 
