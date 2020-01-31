@@ -13,8 +13,11 @@ class Device(Entity):
         super().__init__(identifier, name)
         self.manufacturer = manufacturer
 
-
 class Switch(Device):
+    pass
+
+
+class Lamp(Device):
     pass
 
 
@@ -40,6 +43,27 @@ def entity_factory(payload: dict) -> Optional[Entity]:
 
     if entity_class == 'Room':
         return Room(payload.get('id'), payload.get('friendlyName'))
+
+    if entity_class == 'Device' and type_name == 'Lamp':
+        return Lamp(
+            payload.get('id'),
+            payload.get('friendlyName'),
+            payload.get('manufacturer')
+        )
+
+    if entity_class == 'Device' and type_name == 'TwoChannelRockerSwitch':
+        return Switch(
+            payload.get('id'),
+            payload.get('friendlyName'),
+            payload.get('manufacturer')
+        )
+
+    if entity_class == 'Device' and type_name == 'Lamp':
+        return Lamp(
+            payload.get('id'),
+            payload.get('friendlyName'),
+            payload.get('manufacturer')
+        )
 
     if entity_class == 'Device' and type_name == 'Heater':
         properties = payload.get('properties')

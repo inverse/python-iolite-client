@@ -89,7 +89,10 @@ class IOLiteClient:
                         continue
 
                     device = entity_factory(value)
-                    logger.info(f'Adding {device.name} to {self.discovered[room_id]["name"]}')
+                    if device is None:
+                        continue
+
+                    logger.info(f'Adding {type(device).__name__} ({device.name}) to {self.discovered[room_id]["name"]}')
 
                     self.discovered[room_id]['devices'].update({
                         'id': device.identifier,
