@@ -9,8 +9,6 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-OAuthHandlerType = TypeVar('OAuthHandlerType', bound='OAuthHandler')
-OAuthStorageType = TypeVar('OAuthStorageType', bound='OAuthStorage')
 
 
 class OAuthHandler:
@@ -69,37 +67,6 @@ class OAuthHandler:
             raise e
 
 
-class OAuthWrapper:
-    def __init__(self, oauth_handler: OAuthHandlerType, oauth_storage: OAuthStorageType):
-        self.oauth_handler = oauth_handler
-        self.oauth_storage = oauth_storage
-
-    def get_sid(self, code: str, name: str):
-        """
-        Get SID by providing the initial pairing code and the device name you would like to register.
-
-        :param code: The code provided in the QR code
-        :param name: The name of the device you want to register
-        :return:
-        """
-        access_token = self.oauth_storage.fetch_access_token()
-
-        if access_token is None:
-            access_token = self.oauth_handler.get_access_token(code, name)
-            self.oauth_storage.store_access_token(access_token)
-
-        expires_at = access_token['expires_at']
-
-        if expires_at < time.time():
-            refreshed_token = self.oauth_handler.get_refresh_token(access_token['refresh_token'])
-            self.oauth_storage.store_access_token(refreshed_token)
-            token = refreshed_token['access_token']
-        else:
-            token = access_token['access_token']
-
-        return self.oauth_handler.get_sid(token)
-
-
 class OAuthStorage:
 
     def __init__(self, path: str):
@@ -132,3 +99,34 @@ class OAuthStorage:
 
     def __get_path(self, payload_type: str):
         return os.path.join(self.path, f'{payload_type}.json')
+
+
+class OAuthWrapper:
+    def __init__(self, oauth_handler: OAuthHandler, oauth_storage: OAuthStorage):
+        self.oauth_handler = oauth_handler
+        self.oauth_storage = oauth_storage
+
+    def get_sid(self, code: str, name: str):
+        """
+        Get SID by providing the initial pairing code and the device name you would like to register.
+
+        :param code: The code provided in the QR code
+        :param name: The name of the device you want to register
+        :return:
+        """
+        access_token = self.oauth_storage.fetch_access_token()
+
+        if access_token is None:
+            access_token = self.oauth_handler.get_access_token(code, name)
+            self.oauth_storage.store_access_token(access_token)
+
+        expires_at = access_token['expires_at']
+
+        if expires_at < time.time():
+            refreshed_token = self.oauth_handler.get_refresh_token(access_token['refresh_token'])
+            self.oauth_storage.store_access_token(refreshed_token)
+            token = refreshed_token['access_token']
+        else:
+            token = access_token['access_token']
+
+        return self.oauth_handler.get_sid(token)
