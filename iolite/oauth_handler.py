@@ -2,7 +2,7 @@ import json
 import os
 import time
 from urllib.parse import urlencode
-from typing import TypeVar, Optional
+from typing import Optional
 
 import requests
 import logging

@@ -89,11 +89,11 @@ class IOLiteClient:
                         continue
 
                     device = entity_factory(value)
-                    logger.info(f'Adding {value.get("friendlyName")} to {self.discovered[room_id]["name"]}')
+                    logger.info(f'Adding {device.name} to {self.discovered[room_id]["name"]}')
 
                     self.discovered[room_id]['devices'].update({
-                        'id': value.get('id'),
-                        'name': value.get('friendlyName'),
+                        'id': device.identifier,
+                        'name': device.name,
                     })
 
         elif response_class == ClassMap.QuerySuccess.value:
