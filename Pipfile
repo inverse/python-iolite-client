@@ -6,6 +6,7 @@ verify_ssl = true
 [dev-packages]
 pytest = "*"
 pylama = "*"
+twine = "*"
 
 [packages]
 websockets = "*"
