@@ -38,56 +38,62 @@ class Room(Entity):
     pass
 
 
-def entity_factory(payload: dict) -> Optional[Entity]:
-    entity_class = payload.get('class')
-    type_name = payload.get('typeName')
+class EntityFactory:
 
-    if entity_class == 'Room':
-        return Room(payload.get('id'), payload.get('friendlyName'))
+    def create(self, payload: dict) -> Optional[Entity]:
+        """ Create entity from given payload. """
+        entity_class = payload.get('class')
+        type_name = payload.get('typeName')
 
-    if entity_class == 'Device' and type_name == 'Lamp':
-        return Lamp(
-            payload.get('id'),
-            payload.get('friendlyName'),
-            payload.get('manufacturer')
-        )
+        if entity_class == 'Room':
+            return Room(payload.get('id'), payload.get('friendlyName'))
+        elif entity_class == 'Device':
+            return self.__create_device(type_name, payload)
 
-    if entity_class == 'Device' and type_name == 'TwoChannelRockerSwitch':
-        return Switch(
-            payload.get('id'),
-            payload.get('friendlyName'),
-            payload.get('manufacturer')
-        )
+    def __create_device(self, type_name: str, payload: dict):
+        if type_name == 'Lamp':
+            return Lamp(
+                payload.get('id'),
+                payload.get('friendlyName'),
+                payload.get('manufacturer')
+            )
 
-    if entity_class == 'Device' and type_name == 'Lamp':
-        return Lamp(
-            payload.get('id'),
-            payload.get('friendlyName'),
-            payload.get('manufacturer')
-        )
+        if type_name == 'TwoChannelRockerSwitch':
+            return Switch(
+                payload.get('id'),
+                payload.get('friendlyName'),
+                payload.get('manufacturer')
+            )
 
-    if entity_class == 'Device' and type_name == 'Heater':
-        properties = payload.get('properties')
+        if type_name == 'Lamp':
+            return Lamp(
+                payload.get('id'),
+                payload.get('friendlyName'),
+                payload.get('manufacturer')
+            )
 
-        current_env_temp = __get_prop(properties, 'currentEnvironmentTemperature')
-        battery_level = __get_prop(properties, 'batteryLevel')
-        heating_mode = __get_prop(properties, 'heatingMode')
-        valve_position = __get_prop(properties, 'valvePosition')
+        if type_name == 'Heater':
+            properties = payload.get('properties')
 
-        return RadiatorValve(
-            payload.get('id'),
-            payload.get('friendlyName'),
-            payload.get('manufacturer'),
-            current_env_temp,
-            battery_level,
-            heating_mode,
-            valve_position
-        )
+            current_env_temp = self.__get_prop(properties, 'currentEnvironmentTemperature')
+            battery_level = self.__get_prop(properties, 'batteryLevel')
+            heating_mode = self.__get_prop(properties, 'heatingMode')
+            valve_position = self.__get_prop(properties, 'valvePosition')
 
+            return RadiatorValve(
+                payload.get('id'),
+                payload.get('friendlyName'),
+                payload.get('manufacturer'),
+                current_env_temp,
+                battery_level,
+                heating_mode,
+                valve_position
+            )
 
-def __get_prop(properties: list, key: str):
-    result = list(filter(lambda prop: prop['name'] == key, properties))
-    value = None
-    if len(result) != 0:
-        value = result[0]
-    return value.get('value')
+    @staticmethod
+    def __get_prop(properties: list, key: str):
+        result = list(filter(lambda prop: prop['name'] == key, properties))
+        value = None
+        if len(result) != 0:
+            value = result[0]
+        return value.get('value')

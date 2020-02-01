@@ -6,7 +6,7 @@ import logging
 from typing import NoReturn
 from base64 import b64encode
 
-from iolite.entity import entity_factory
+from iolite.entity import EntityFactory
 from iolite.request_handler import ClassMap, RequestHandler
 
 logging.basicConfig(level=logging.INFO)
@@ -20,6 +20,7 @@ class IOLiteClient:
         self.discovered = {}
         self.finished_discovery = False
         self.request_handler = RequestHandler()
+        self.entity_factory = EntityFactory()
         self.sid = sid
         self.username = username
         self.password = password
@@ -60,7 +61,7 @@ class IOLiteClient:
 
             if response_dict.get('requestID').startswith('places'):
                 for value in response_dict.get('initialValues'):
-                    room = entity_factory(value)
+                    room = self.entity_factory.create(value)
                     logger.info(f'Setting up {room.name}')
                     self.discovered[room.identifier] = {
                         'name': room.name,
