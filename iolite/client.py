@@ -9,7 +9,6 @@ from base64 import b64encode
 from iolite.entity import EntityFactory
 from iolite.request_handler import ClassMap, RequestHandler
 
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
