@@ -9,38 +9,21 @@ from environs import Env
 from base64 import b64encode
 
 from iolite.entity import entity_factory
-from iolite.oauth_handler import OAuthHandler, OAuthStorage, OAuthWrapper
 from iolite.request_handler import ClassMap, RequestHandler
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-env = Env()
-env.read_env()
-
-USERNAME = os.getenv('USERNAME')
-PASSWORD = os.getenv('PASSWORD')
-CODE = os.getenv('CODE')
-NAME = os.getenv('NAME')
-
-user_pass = f'{USERNAME}:{PASSWORD}'
-
-user_pass = b64encode(user_pass.encode()).decode('ascii')
-headers = {'Authorization': f'Basic {user_pass}'}
-
-oauth_storage = OAuthStorage('.')
-oauth_handler = OAuthHandler(USERNAME, PASSWORD)
-oauth_wrapper = OAuthWrapper(oauth_handler, oauth_storage)
-sid = oauth_wrapper.get_sid(CODE, NAME)
-
-
 class IOLiteClient:
     BASE_URL = 'wss://remote.iolite.de'
 
-    def __init__(self, sid: str):
+    def __init__(self, sid: str, username: str, password: str):
         self.discovered = {}
+        self.finished_discovery = False
         self.request_handler = RequestHandler()
         self.sid = sid
+        self.username = username
+        self.password = password
 
     async def send_request(self, request: dict, websocket) -> NoReturn:
         request = json.dumps(request)
@@ -48,6 +31,10 @@ class IOLiteClient:
         logger.info(f'Request sent {request}', extra={'request': request})
 
     async def __handler(self) -> NoReturn:
+        user_pass = f'{self.username}:{self.password}'
+        user_pass = b64encode(user_pass.encode()).decode('ascii')
+        headers = {'Authorization': f'Basic {user_pass}'}
+
         uri = f'{self.BASE_URL}/bus/websocket/application/json?SID={self.sid}'
         async with websockets.connect(uri, extra_headers=headers) as websocket:
             request = self.request_handler.get_subscribe_request('places')
@@ -99,6 +86,8 @@ class IOLiteClient:
                         'name': device.name,
                     })
 
+                self.finished_discovery = True
+
         elif response_class == ClassMap.QuerySuccess.value:
             logger.info('Handling QuerySuccess')
         elif response_class == ClassMap.KeepAliveRequest.value:
@@ -112,6 +101,4 @@ class IOLiteClient:
         asyncio.get_event_loop().run_until_complete(self.__handler())
 
 
-client = IOLiteClient(sid)
 
-client.connect()
