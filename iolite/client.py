@@ -75,7 +75,7 @@ class IOLiteClient:
                     if room_id not in self.discovered:
                         continue
 
-                    device = entity_factory(value)
+                    device = self.entity_factory.create(value)
                     if device is None:
                         continue
 
