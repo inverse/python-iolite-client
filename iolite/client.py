@@ -1,11 +1,9 @@
 import asyncio
-import os
 import websockets
 import json
 import logging
 
 from typing import NoReturn
-from environs import Env
 from base64 import b64encode
 
 from iolite.entity import entity_factory
@@ -13,6 +11,7 @@ from iolite.request_handler import ClassMap, RequestHandler
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
 
 class IOLiteClient:
     BASE_URL = 'wss://remote.iolite.de'
@@ -99,6 +98,3 @@ class IOLiteClient:
 
     def connect(self):
         asyncio.get_event_loop().run_until_complete(self.__handler())
-
-
-
