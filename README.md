@@ -22,12 +22,12 @@ Open your Deutsche Wohnen tablet and begin pairing device process. Scan QR code 
 - `basicAuth` contains base64 encoded HTTP basic username and password.
 - `code` is the pairing code
 
-# Setup
+# Playground
 
 - Copy `.env.example` to `.env`
 - Add your credentials to `.env` following the above process
 - init your pipenv environment
-- Run `client.py`
+- Run `example.py`
 
 # Licence
 
