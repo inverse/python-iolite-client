@@ -24,7 +24,7 @@ class IOLiteClient:
         self.username = username
         self.password = password
 
-    async def send_request(self, request: dict, websocket) -> NoReturn:
+    async def __send_request(self, request: dict, websocket) -> NoReturn:
         request = json.dumps(request)
         await websocket.send(request)
         logger.info(f'Request sent {request}', extra={'request': request})
@@ -37,21 +37,21 @@ class IOLiteClient:
         uri = f'{self.BASE_URL}/bus/websocket/application/json?SID={self.sid}'
         async with websockets.connect(uri, extra_headers=headers) as websocket:
             request = self.request_handler.get_subscribe_request('places')
-            await self.send_request(request, websocket)
+            await self.__send_request(request, websocket)
 
             await asyncio.sleep(1)
 
             request = self.request_handler.get_subscribe_request('devices')
-            await self.send_request(request, websocket)
+            await self.__send_request(request, websocket)
 
             request = self.request_handler.get_query_request('situationProfileModel')
-            await self.send_request(request, websocket)
+            await self.__send_request(request, websocket)
 
             async for response in websocket:
                 logger.info(f'Response received {response}', extra={'response': response})
-                await self.response_handler(response, websocket)
+                await self.__response_handler(response, websocket)
 
-    async def response_handler(self, response: str, websocket) -> NoReturn:
+    async def __response_handler(self, response: str, websocket) -> NoReturn:
         response_dict = json.loads(response)
         response_class = response_dict.get('class')
 
@@ -92,7 +92,7 @@ class IOLiteClient:
         elif response_class == ClassMap.KeepAliveRequest.value:
             logger.info('Handling KeepAliveRequest')
             request = self.request_handler.get_keepalive_request()
-            await self.send_request(request, websocket)
+            await self.__send_request(request, websocket)
         else:
             logger.error(f'Unsupported response {response_dict}', extra={'response_class': response_class})
 
