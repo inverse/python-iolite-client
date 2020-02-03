@@ -1,6 +1,6 @@
 import unittest
 
-from iolite.entity import RadiatorValve, EntityFactory
+from iolite.entity import RadiatorValve, EntityFactory, Room, Switch
 
 EXAMPLE_HEATER = {'properties': [
     {'timestamp': 1580472165268, 'name': 'valvePosition', 'namespaceURI': 'http://iolite.de',
@@ -119,6 +119,13 @@ class MyTestCase(unittest.TestCase):
         self.assertIsInstance(heater, RadiatorValve)
         self.assertEqual(heater.identifier, 'id-1')
         self.assertEqual(heater.name, 'Stellantrieb_0')
+
+    def test_add_device_to_room(self):
+        room = Room('1', 'Bedroom')
+        switch = Switch('2', 'Bedroom Switch', 'Generic')
+        room.add_device(switch)
+        self.assertEqual(len(room.devices), 1)
+        self.assertEqual(room.devices[0], switch)
 
 
 if __name__ == '__main__':

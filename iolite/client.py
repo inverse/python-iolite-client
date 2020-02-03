@@ -6,7 +6,7 @@ import logging
 from typing import NoReturn
 from base64 import b64encode
 
-from iolite.entity import EntityFactory
+from iolite.entity import EntityFactory, Room
 from iolite.request_handler import ClassMap, RequestHandler
 
 logger = logging.getLogger(__name__)
@@ -16,7 +16,7 @@ class IOLiteClient:
     BASE_URL = 'wss://remote.iolite.de'
 
     def __init__(self, sid: str, username: str, password: str):
-        self.discovered = {}
+        self.discovered = []
         self.finished_discovery = False
         self.request_handler = RequestHandler()
         self.entity_factory = EntityFactory()
@@ -24,10 +24,20 @@ class IOLiteClient:
         self.username = username
         self.password = password
 
-    async def __send_request(self, request: dict, websocket) -> NoReturn:
+    @staticmethod
+    async def __send_request(request: dict, websocket) -> NoReturn:
         request = json.dumps(request)
         await websocket.send(request)
         logger.info(f'Request sent {request}', extra={'request': request})
+
+    def __find_room_by_identifier(self, identifier: str) -> Room:
+        match = None
+        for room in self.discovered:
+            if room.identifier == identifier:
+                match = room
+                break
+
+        return match
 
     async def __handler(self) -> NoReturn:
         user_pass = f'{self.username}:{self.password}'
@@ -36,11 +46,14 @@ class IOLiteClient:
 
         uri = f'{self.BASE_URL}/bus/websocket/application/json?SID={self.sid}'
         async with websockets.connect(uri, extra_headers=headers) as websocket:
+
+            # Get Rooms
             request = self.request_handler.get_subscribe_request('places')
             await self.__send_request(request, websocket)
 
             await asyncio.sleep(1)
 
+            # Get Devices
             request = self.request_handler.get_subscribe_request('devices')
             await self.__send_request(request, websocket)
 
@@ -62,25 +75,23 @@ class IOLiteClient:
                 for value in response_dict.get('initialValues'):
                     room = self.entity_factory.create(value)
                     logger.info(f'Setting up {room.name}')
-                    self.discovered[room.identifier] = {
-                        'name': room.name,
-                        'devices': [],
-                    }
+                    self.discovered.append(room)
 
             if response_dict.get('requestID').startswith('devices'):
                 for value in response_dict.get('initialValues'):
                     room_id = value.get('placeIdentifier')
 
-                    if room_id not in self.discovered:
+                    room = self.__find_room_by_identifier(room_id)
+                    if not room:
                         continue
 
                     device = self.entity_factory.create(value)
                     if device is None:
                         continue
 
-                    logger.info(f'Adding {type(device).__name__} ({device.name}) to {self.discovered[room_id]["name"]}')
+                    logger.info(f'Adding {type(device).__name__} ({device.name}) to {room.name}')
 
-                    self.discovered[room_id]['devices'].append(device)
+                    room.add_device(device)
 
                 self.finished_discovery = True
 

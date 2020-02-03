@@ -35,7 +35,12 @@ class RadiatorValve(Device):
 
 
 class Room(Entity):
-    pass
+    def __init__(self, identifier: str, name: str):
+        super().__init__(identifier, name)
+        self.devices = []
+
+    def add_device(self, device: Device):
+        self.devices.append(device)
 
 
 class EntityFactory:
