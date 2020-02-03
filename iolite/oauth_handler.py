@@ -19,6 +19,12 @@ class OAuthHandler:
         self.password = password
 
     def get_access_token(self, code: str, name: str) -> dict:
+        """
+        Get access token.
+        :param code: The pairing code
+        :param name: The name of the device being paired
+        :return:
+        """
         query = urlencode({
             'client_id': self.CLIENT_ID,
             'grant_type': 'authorization_code',
@@ -35,7 +41,12 @@ class OAuthHandler:
             logger.exception(e)
             raise e
 
-    def get_refresh_token(self, refresh_token: str) -> dict:
+    def get_new_access_token(self, refresh_token: str) -> dict:
+        """
+        Get new access token
+        :param refresh_token: The refresh token
+        :return: dict containing access token, and new refresh token
+        """
         query = urlencode({
             'client_id': self.CLIENT_ID,
             'grant_type': 'refresh_token',
@@ -52,6 +63,11 @@ class OAuthHandler:
             raise e
 
     def get_sid(self, access_token: str) -> str:
+        """
+        Get session ID.
+        :param access_token: Valid access token
+        :return: SID
+        """
         query = urlencode({
             'access_token': access_token,
         })
@@ -122,7 +138,7 @@ class OAuthWrapper:
         expires_at = access_token['expires_at']
 
         if expires_at < time.time():
-            refreshed_token = self.oauth_handler.get_refresh_token(access_token['refresh_token'])
+            refreshed_token = self.oauth_handler.get_new_access_token(access_token['refresh_token'])
             self.oauth_storage.store_access_token(refreshed_token)
             token = refreshed_token['access_token']
         else:

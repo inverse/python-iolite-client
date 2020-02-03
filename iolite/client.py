@@ -1,71 +1,70 @@
 import asyncio
-import os
 import websockets
 import json
 import logging
 
 from typing import NoReturn
-from environs import Env
 from base64 import b64encode
 
-from iolite.entity import entity_factory
-from iolite.oauth_handler import OAuthHandler, OAuthStorage, OAuthWrapper
+from iolite.entity import EntityFactory, Room
 from iolite.request_handler import ClassMap, RequestHandler
 
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-env = Env()
-env.read_env()
-
-USERNAME = os.getenv('USERNAME')
-PASSWORD = os.getenv('PASSWORD')
-CODE = os.getenv('CODE')
-NAME = os.getenv('NAME')
-
-user_pass = f'{USERNAME}:{PASSWORD}'
-
-user_pass = b64encode(user_pass.encode()).decode('ascii')
-headers = {'Authorization': f'Basic {user_pass}'}
-
-oauth_storage = OAuthStorage('.')
-oauth_handler = OAuthHandler(USERNAME, PASSWORD)
-oauth_wrapper = OAuthWrapper(oauth_handler, oauth_storage)
-sid = oauth_wrapper.get_sid(CODE, NAME)
 
 
 class IOLiteClient:
     BASE_URL = 'wss://remote.iolite.de'
 
-    def __init__(self, sid: str):
-        self.discovered = {}
+    def __init__(self, sid: str, username: str, password: str):
+        self.discovered = []
+        self.finished_discovery = False
         self.request_handler = RequestHandler()
+        self.entity_factory = EntityFactory()
         self.sid = sid
+        self.username = username
+        self.password = password
 
-    async def send_request(self, request: dict, websocket) -> NoReturn:
+    @staticmethod
+    async def __send_request(request: dict, websocket) -> NoReturn:
         request = json.dumps(request)
         await websocket.send(request)
         logger.info(f'Request sent {request}', extra={'request': request})
 
+    def __find_room_by_identifier(self, identifier: str) -> Room:
+        match = None
+        for room in self.discovered:
+            if room.identifier == identifier:
+                match = room
+                break
+
+        return match
+
     async def __handler(self) -> NoReturn:
+        user_pass = f'{self.username}:{self.password}'
+        user_pass = b64encode(user_pass.encode()).decode('ascii')
+        headers = {'Authorization': f'Basic {user_pass}'}
+
         uri = f'{self.BASE_URL}/bus/websocket/application/json?SID={self.sid}'
         async with websockets.connect(uri, extra_headers=headers) as websocket:
+
+            # Get Rooms
             request = self.request_handler.get_subscribe_request('places')
-            await self.send_request(request, websocket)
+            await self.__send_request(request, websocket)
 
             await asyncio.sleep(1)
 
+            # Get Devices
             request = self.request_handler.get_subscribe_request('devices')
-            await self.send_request(request, websocket)
+            await self.__send_request(request, websocket)
 
             request = self.request_handler.get_query_request('situationProfileModel')
-            await self.send_request(request, websocket)
+            await self.__send_request(request, websocket)
 
             async for response in websocket:
                 logger.info(f'Response received {response}', extra={'response': response})
-                await self.response_handler(response, websocket)
+                await self.__response_handler(response, websocket)
 
-    async def response_handler(self, response: str, websocket) -> NoReturn:
+    async def __response_handler(self, response: str, websocket) -> NoReturn:
         response_dict = json.loads(response)
         response_class = response_dict.get('class')
 
@@ -74,44 +73,36 @@ class IOLiteClient:
 
             if response_dict.get('requestID').startswith('places'):
                 for value in response_dict.get('initialValues'):
-                    room = entity_factory(value)
+                    room = self.entity_factory.create(value)
                     logger.info(f'Setting up {room.name}')
-                    self.discovered[room.identifier] = {
-                        'name': room.name,
-                        'devices': {},
-                    }
+                    self.discovered.append(room)
 
             if response_dict.get('requestID').startswith('devices'):
                 for value in response_dict.get('initialValues'):
                     room_id = value.get('placeIdentifier')
 
-                    if room_id not in self.discovered:
+                    room = self.__find_room_by_identifier(room_id)
+                    if not room:
                         continue
 
-                    device = entity_factory(value)
+                    device = self.entity_factory.create(value)
                     if device is None:
                         continue
 
-                    logger.info(f'Adding {type(device).__name__} ({device.name}) to {self.discovered[room_id]["name"]}')
+                    logger.info(f'Adding {type(device).__name__} ({device.name}) to {room.name}')
 
-                    self.discovered[room_id]['devices'].update({
-                        'id': device.identifier,
-                        'name': device.name,
-                    })
+                    room.add_device(device)
+
+                self.finished_discovery = True
 
         elif response_class == ClassMap.QuerySuccess.value:
             logger.info('Handling QuerySuccess')
         elif response_class == ClassMap.KeepAliveRequest.value:
             logger.info('Handling KeepAliveRequest')
             request = self.request_handler.get_keepalive_request()
-            await self.send_request(request, websocket)
+            await self.__send_request(request, websocket)
         else:
             logger.error(f'Unsupported response {response_dict}', extra={'response_class': response_class})
 
     def connect(self):
         asyncio.get_event_loop().run_until_complete(self.__handler())
-
-
-client = IOLiteClient(sid)
-
-client.connect()

@@ -1,7 +1,15 @@
+# IDE
 /.vscode/
 /.idea/
-/.env
 
+# Secrets
+/.env
+access_token.json
+
+# Cache
 __pycache__
 
-access_token.json
+# Dist
+/build/
+/dist/
+*.egg-info
