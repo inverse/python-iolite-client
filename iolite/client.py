@@ -64,7 +64,7 @@ class IOLiteClient:
                     logger.info(f'Setting up {room.name}')
                     self.discovered[room.identifier] = {
                         'name': room.name,
-                        'devices': {},
+                        'devices': [],
                     }
 
             if response_dict.get('requestID').startswith('devices'):
@@ -80,10 +80,7 @@ class IOLiteClient:
 
                     logger.info(f'Adding {type(device).__name__} ({device.name}) to {self.discovered[room_id]["name"]}')
 
-                    self.discovered[room_id]['devices'].update({
-                        'id': device.identifier,
-                        'name': device.name,
-                    })
+                    self.discovered[room_id]['devices'].append(device)
 
                 self.finished_discovery = True
 
