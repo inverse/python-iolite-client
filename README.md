@@ -29,6 +29,13 @@ Open your Deutsche Wohnen tablet and begin pairing device process. Scan QR code 
 - init your pipenv environment
 - Run `example.py`
 
+Once you've generated the `SID` you can use it in conjunction with the HTTP basic authentication credentials to access 
+the remote UI on your browser of choice.
+
+```
+https://remote.iolite.de/ui/?SID=<SID>
+```
+
 # Licence
 
 MIT

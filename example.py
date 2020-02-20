@@ -1,6 +1,6 @@
 import logging
+
 import os
-import time
 
 from environs import Env
 
@@ -13,8 +13,8 @@ logger = logging.getLogger(__name__)
 env = Env()
 env.read_env()
 
-USERNAME = os.getenv('USERNAME')
-PASSWORD = os.getenv('PASSWORD')
+USERNAME = os.getenv('HTTP_USERNAME')
+PASSWORD = os.getenv('HTTP_PASSWORD')
 CODE = os.getenv('CODE')
 NAME = os.getenv('NAME')
 
@@ -30,9 +30,5 @@ client = IOLiteClient(sid, USERNAME, PASSWORD)
 logger.info('Connecting to client')
 
 client.connect()
-
-while not client.finished_discovery:
-    time.sleep(1)
-    logger.info('sleeping')
 
 logger.info('Finished discovery')

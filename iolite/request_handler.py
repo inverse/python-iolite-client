@@ -14,6 +14,7 @@ class ClassMap(Enum):
     KeepAliveResponse = 'KeepAliveResponse'
     ActionRequest = 'ActionRequest'
     ActionSuccess = 'ActionSuccess'
+    ModelEventResponse = 'ModelEventResponse'
 
 
 class RequestHandler:
