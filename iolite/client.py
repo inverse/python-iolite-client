@@ -1,5 +1,4 @@
 import asyncio
-from asyncio import CancelledError
 
 import websockets
 import json

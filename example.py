@@ -1,6 +1,6 @@
 import logging
+
 import os
-import time
 
 from environs import Env
 
