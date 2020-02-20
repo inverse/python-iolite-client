@@ -1,4 +1,6 @@
 import asyncio
+from asyncio import CancelledError
+
 import websockets
 import json
 import logging
@@ -6,7 +8,7 @@ import logging
 from typing import NoReturn
 from base64 import b64encode
 
-from iolite.entity import EntityFactory, Room
+from iolite.entity import EntityFactory, Room, Device
 from iolite.request_handler import ClassMap, RequestHandler
 
 logger = logging.getLogger(__name__)
@@ -17,7 +19,6 @@ class IOLiteClient:
 
     def __init__(self, sid: str, username: str, password: str):
         self.discovered = []
-        self.finished_discovery = False
         self.request_handler = RequestHandler()
         self.entity_factory = EntityFactory()
         self.sid = sid
@@ -86,14 +87,13 @@ class IOLiteClient:
                         continue
 
                     device = self.entity_factory.create(value)
-                    if device is None:
+                    if not isinstance(device, Device):
+                        logger.warning(f'Entity factory created unsupported class ({type(device).__name__})')
                         continue
 
                     logger.info(f'Adding {type(device).__name__} ({device.name}) to {room.name}')
 
                     room.add_device(device)
-
-                self.finished_discovery = True
 
         elif response_class == ClassMap.QuerySuccess.value:
             logger.info('Handling QuerySuccess')
