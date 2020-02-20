@@ -101,6 +101,9 @@ class IOLiteClient:
             logger.info('Handling KeepAliveRequest')
             request = self.request_handler.get_keepalive_request()
             await self.__send_request(request, websocket)
+        elif response_class == ClassMap.ModelEventResponse.value:
+            pass
+            # TODO: Update entity states
         else:
             logger.error(f'Unsupported response {response_dict}', extra={'response_class': response_class})
 
