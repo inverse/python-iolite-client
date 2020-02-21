@@ -24,6 +24,8 @@ oauth_handler = OAuthHandler(USERNAME, PASSWORD)
 oauth_wrapper = OAuthWrapper(oauth_handler, oauth_storage)
 sid = oauth_wrapper.get_sid(CODE, NAME)
 
+logger.info(f'Remote URL: https://remote.iolite.de/ui/?SID={sid}')
+
 # Init client
 client = IOLiteClient(sid, USERNAME, PASSWORD)
 

@@ -39,13 +39,22 @@ class IOLiteClient:
 
         return match
 
-    async def __handler(self) -> NoReturn:
+    def __get_default_headers(self) -> dict:
         user_pass = f'{self.username}:{self.password}'
         user_pass = b64encode(user_pass.encode()).decode('ascii')
         headers = {'Authorization': f'Basic {user_pass}'}
 
+        return headers
+
+    async def __heating_handler(self) -> NoReturn:
+        uri = f'{self.BASE_URL}/heating/ws?SID={self.sid}'
+        async with websockets.connect(uri, extra_headers=self.__get_default_headers()) as websocket:
+            pass
+            # TODO Wire up
+
+    async def __handler(self) -> NoReturn:
         uri = f'{self.BASE_URL}/bus/websocket/application/json?SID={self.sid}'
-        async with websockets.connect(uri, extra_headers=headers) as websocket:
+        async with websockets.connect(uri, extra_headers=self.__get_default_headers()) as websocket:
 
             # Get Rooms
             request = self.request_handler.get_subscribe_request('places')
@@ -101,6 +110,7 @@ class IOLiteClient:
             request = self.request_handler.get_keepalive_request()
             await self.__send_request(request, websocket)
         elif response_class == ClassMap.ModelEventResponse.value:
+            logger.info('Handling ModelEventResponse')
             pass
             # TODO: Update entity states
         else:
