@@ -52,7 +52,15 @@ class IOLiteClient:
             pass
             # TODO Wire up
 
+    async def __devices_handler(self) -> NoReturn:
+        logger.info('Connecting to devices WS')
+        uri = f'{self.BASE_URL}/devices/ws?SID={self.sid}'
+        async with websockets.connect(uri, extra_headers=self.__get_default_headers()) as websocket:
+            async for response in websocket:
+                logger.info(f'Response received (device) {response}', extra={'response': response})
+
     async def __handler(self) -> NoReturn:
+        logger.info('Connecting to JSON WS')
         uri = f'{self.BASE_URL}/bus/websocket/application/json?SID={self.sid}'
         async with websockets.connect(uri, extra_headers=self.__get_default_headers()) as websocket:
 
@@ -70,7 +78,7 @@ class IOLiteClient:
             await self.__send_request(request, websocket)
 
             async for response in websocket:
-                logger.info(f'Response received {response}', extra={'response': response})
+                logger.info(f'Response received (JSON) {response}', extra={'response': response})
                 await self.__response_handler(response, websocket)
 
     async def __response_handler(self, response: str, websocket) -> NoReturn:
@@ -118,3 +126,4 @@ class IOLiteClient:
 
     def connect(self):
         asyncio.get_event_loop().run_until_complete(self.__handler())
+        asyncio.get_event_loop().run_until_complete(self.__devices_handler())
