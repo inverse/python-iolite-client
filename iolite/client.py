@@ -49,13 +49,14 @@ class IOLiteClient:
     async def __heating_handler(self) -> NoReturn:
         uri = f'{self.BASE_URL}/heating/ws?SID={self.sid}'
         async with websockets.connect(uri, extra_headers=self.__get_default_headers()) as websocket:
-            pass
-            # TODO Wire up
+            async for response in websocket:
+                logger.info(f'Response received (heating) {response}', extra={'response': response})
 
     async def __devices_handler(self) -> NoReturn:
         logger.info('Connecting to devices WS')
         uri = f'{self.BASE_URL}/devices/ws?SID={self.sid}'
         async with websockets.connect(uri, extra_headers=self.__get_default_headers()) as websocket:
+            name = await websocket.recv()
             async for response in websocket:
                 logger.info(f'Response received (device) {response}', extra={'response': response})
 
@@ -125,5 +126,7 @@ class IOLiteClient:
             logger.error(f'Unsupported response {response_dict}', extra={'response_class': response_class})
 
     def connect(self):
-        asyncio.get_event_loop().run_until_complete(self.__handler())
-        asyncio.get_event_loop().run_until_complete(self.__devices_handler())
+        loop = asyncio.get_event_loop()
+        loop.create_task(self.__handler())
+        loop.create_task(self.__devices_handler())
+        loop.run_forever()
