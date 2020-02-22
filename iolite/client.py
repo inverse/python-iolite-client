@@ -56,7 +56,6 @@ class IOLiteClient:
         logger.info('Connecting to devices WS')
         uri = f'{self.BASE_URL}/devices/ws?SID={self.sid}'
         async with websockets.connect(uri, extra_headers=self.__get_default_headers()) as websocket:
-            name = await websocket.recv()
             async for response in websocket:
                 logger.info(f'Response received (device) {response}', extra={'response': response})
 
