@@ -1,13 +1,11 @@
 import asyncio
-
-import websockets
 import json
 import logging
-
-from typing import NoReturn
 from base64 import b64encode
+from typing import NoReturn
 
-from iolite.entity import EntityFactory, Room, Device
+import websockets
+from iolite.entity import Device, EntityFactory, Room
 from iolite.request_handler import ClassMap, RequestHandler
 
 logger = logging.getLogger(__name__)
