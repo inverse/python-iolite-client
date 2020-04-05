@@ -1,6 +1,6 @@
 import unittest
 
-from iolite.entity import RadiatorValve, EntityFactory, Room, Switch
+from iolite.entity import EntityFactory, RadiatorValve, Room, Switch
 
 EXAMPLE_HEATER = {'properties': [
     {'timestamp': 1580472165268, 'name': 'valvePosition', 'namespaceURI': 'http://iolite.de',
