@@ -17,6 +17,8 @@ jobs:
       run: pipenv install -d
     - name: Lint
       run: pipenv run pylama
+    - name: pre-commit
+      run: pre-commit run --all-files --show-diff-on-failure
   test:
     runs-on: ubuntu-latest
     steps:

@@ -7,6 +7,8 @@ verify_ssl = true
 pytest = "*"
 pylama = "*"
 twine = "*"
+pre-commit = "*"
+isort = "*"
 
 [packages]
 websockets = "*"

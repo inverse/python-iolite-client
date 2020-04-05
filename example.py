@@ -1,9 +1,7 @@
 import logging
-
 import os
 
 from environs import Env
-
 from iolite.client import IOLiteClient
 from iolite.oauth_handler import OAuthHandler, OAuthStorage, OAuthWrapper
 
