@@ -117,15 +117,18 @@ class MyTestCase(unittest.TestCase):
         entity_factory = EntityFactory()
         heater = entity_factory.create(EXAMPLE_HEATER)
         self.assertIsInstance(heater, RadiatorValve)
-        self.assertEqual(heater.identifier, 'id-1')
-        self.assertEqual(heater.name, 'Stellantrieb_0')
+        self.assertEqual('id-1', heater.identifier)
+        self.assertEqual('Stellantrieb_0', heater.name)
+        self.assertEqual(100, heater.battery_level)
+        self.assertEqual(0, heater.valve_position)
+        self.assertEqual(19, heater.current_env_temp)
 
     def test_add_device_to_room(self):
         room = Room('1', 'Bedroom')
         switch = Switch('2', 'Bedroom Switch', 'Generic')
         room.add_device(switch)
-        self.assertEqual(len(room.devices), 1)
-        self.assertEqual(room.devices[0], switch)
+        self.assertEqual(1, len(room.devices))
+        self.assertEqual(switch, room.devices[0])
 
 
 if __name__ == '__main__':
