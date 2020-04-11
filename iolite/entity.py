@@ -97,6 +97,13 @@ class EntityFactory:
 
     @staticmethod
     def __get_prop(properties: list, key: str):
+        """
+        Get a property from list of properties.
+
+        :param properties: The list of properties to filter on
+        :param key: The property key
+        :return:
+        """
         result = list(filter(lambda prop: prop['name'] == key, properties))
         value = None
         if len(result) != 0:
