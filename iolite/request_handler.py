@@ -32,7 +32,7 @@ class RequestHandler:
 
         return request
 
-    def get_action_request(self, device_id: str, temp: int) -> dict:
+    def get_action_request(self, device_id: str, temp: float) -> dict:
         request = self._build_request(ClassMap.ActionRequest.value, {
             'modelID': 'http://iolite.de#Environment',
             'class': ClassMap.ActionRequest.value,

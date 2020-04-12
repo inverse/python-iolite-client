@@ -2,7 +2,7 @@ import asyncio
 import json
 import logging
 from base64 import b64encode
-from typing import NoReturn
+from typing import NoReturn, Optional
 
 import websockets
 from iolite.entity import Device, EntityFactory, Room
@@ -28,7 +28,7 @@ class IOLiteClient:
         await websocket.send(request)
         logger.info(f'Request sent {request}', extra={'request': request})
 
-    def __find_room_by_identifier(self, identifier: str) -> Room:
+    def __find_room_by_identifier(self, identifier: str) -> Optional[Room]:
         match = None
         for room in self.discovered:
             if room.identifier == identifier:
@@ -62,16 +62,17 @@ class IOLiteClient:
         uri = f'{self.BASE_URL}/bus/websocket/application/json?SID={self.sid}'
         async with websockets.connect(uri, extra_headers=self.__get_default_headers()) as websocket:
 
+            self.websocket = websocket
+
             # Get Rooms
             request = self.request_handler.get_subscribe_request('places')
             await self.__send_request(request, websocket)
-
-            await asyncio.sleep(1)
 
             # Get Devices
             request = self.request_handler.get_subscribe_request('devices')
             await self.__send_request(request, websocket)
 
+            # Get Profiles
             request = self.request_handler.get_query_request('situationProfileModel')
             await self.__send_request(request, websocket)
 
@@ -89,7 +90,7 @@ class IOLiteClient:
             if response_dict.get('requestID').startswith('places'):
                 for value in response_dict.get('initialValues'):
                     room = self.entity_factory.create(value)
-                    logger.info(f'Setting up {room.name}')
+                    logger.info(f'Setting up {room.name} ({room.identifier})')
                     self.discovered.append(room)
 
             if response_dict.get('requestID').startswith('devices'):
@@ -126,4 +127,4 @@ class IOLiteClient:
         loop = asyncio.get_event_loop()
         loop.create_task(self.__handler())
         loop.create_task(self.__devices_handler())
-        loop.run_forever()
+        loop.run_until_complete()

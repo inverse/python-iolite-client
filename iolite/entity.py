@@ -54,6 +54,8 @@ class EntityFactory:
             return Room(payload.get('id'), payload.get('friendlyName'))
         elif entity_class == 'Device':
             return self.__create_device(type_name, payload)
+        else:
+            raise NotImplementedError(f'An unsupported entity type was returned {entity_class}')
 
     def __create_device(self, type_name: str, payload: dict):
         if type_name == 'Lamp':
