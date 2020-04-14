@@ -28,6 +28,5 @@ class DiscoveredTest(unittest.TestCase):
         self.assertEqual(switch, room.devices[switch.identifier])
 
 
-
 if __name__ == '__main__':
     unittest.main()

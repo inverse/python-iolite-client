@@ -9,10 +9,10 @@ def create(payload: dict) -> Optional[Entity]:
     identifier = payload.get('id')
 
     if not entity_class:
-        raise Exception(f'Payload missing class')
+        raise Exception('Payload missing class')
 
     if not identifier:
-        raise Exception(f'Payload missing id')
+        raise Exception('Payload missing id')
 
     if entity_class == 'Room':
         return Room(identifier, payload.get('friendlyName'))
