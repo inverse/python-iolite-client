@@ -3,7 +3,7 @@ from typing import Optional
 
 
 class Entity(ABC):
-    def __init__(self, identifier: str, name: str):
+    def __init__(self, identifier: str, name: str = None):
         self.identifier = identifier
         self.name = name
 
@@ -35,12 +35,15 @@ class RadiatorValve(Device):
 
 
 class Room(Entity):
-    def __init__(self, identifier: str, name: str):
+    def __init__(self, identifier: str, name: str = None):
         super().__init__(identifier, name)
-        self.devices = []
+        self.devices = {}
 
     def add_device(self, device: Device):
-        self.devices.append(device)
+        self.devices[device.identifier] = device
+
+    def has_device(self, device: Device) -> bool:
+        return device.identifier in self.devices
 
 
 class EntityFactory:
@@ -48,33 +51,39 @@ class EntityFactory:
     def create(self, payload: dict) -> Optional[Entity]:
         """ Create entity from given payload. """
         entity_class = payload.get('class')
-        type_name = payload.get('typeName')
+        id = payload.get('id')
+
+        if not entity_class:
+            raise Exception(f'Payload missing class')
+
+        if not id:
+            raise Exception(f'Payload missing id')
 
         if entity_class == 'Room':
-            return Room(payload.get('id'), payload.get('friendlyName'))
+            return Room(id, payload.get('friendlyName'))
         elif entity_class == 'Device':
-            return self.__create_device(type_name, payload)
+            return self.__create_device(id, payload.get('typeName'), payload)
         else:
             raise NotImplementedError(f'An unsupported entity type was returned {entity_class}')
 
-    def __create_device(self, type_name: str, payload: dict):
+    def __create_device(self, id: str, type_name: str, payload: dict):
         if type_name == 'Lamp':
             return Lamp(
-                payload.get('id'),
+                id,
                 payload.get('friendlyName'),
                 payload.get('manufacturer')
             )
 
         if type_name == 'TwoChannelRockerSwitch':
             return Switch(
-                payload.get('id'),
+                id,
                 payload.get('friendlyName'),
                 payload.get('manufacturer')
             )
 
         if type_name == 'Lamp':
             return Lamp(
-                payload.get('id'),
+                id,
                 payload.get('friendlyName'),
                 payload.get('manufacturer')
             )
@@ -88,7 +97,7 @@ class EntityFactory:
             valve_position = self.__get_prop(properties, 'valvePosition')
 
             return RadiatorValve(
-                payload.get('id'),
+                id,
                 payload.get('friendlyName'),
                 payload.get('manufacturer'),
                 current_env_temp,

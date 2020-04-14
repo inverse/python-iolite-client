@@ -99,7 +99,7 @@ class IOLiteClient:
 
                     room = self.__find_room_by_identifier(room_id)
                     if not room:
-                        continue
+                        self.discovered.append()
 
                     device = self.entity_factory.create(value)
                     if not isinstance(device, Device):
@@ -127,4 +127,4 @@ class IOLiteClient:
         loop = asyncio.get_event_loop()
         loop.create_task(self.__handler())
         loop.create_task(self.__devices_handler())
-        loop.run_until_complete()
+        loop.run_forever()

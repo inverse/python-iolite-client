@@ -112,7 +112,7 @@ EXAMPLE_HEATER = {'properties': [
     'ePackageURI': 'http://www.iolite.de/environment-1.0.ecore'}
 
 
-class MyTestCase(unittest.TestCase):
+class EntityTest(unittest.TestCase):
     def test_create_heater(self):
         entity_factory = EntityFactory()
         heater = entity_factory.create(EXAMPLE_HEATER)
@@ -128,7 +128,14 @@ class MyTestCase(unittest.TestCase):
         switch = Switch('2', 'Bedroom Switch', 'Generic')
         room.add_device(switch)
         self.assertEqual(1, len(room.devices))
-        self.assertEqual(switch, room.devices[0])
+        self.assertEqual(switch, room.devices[switch.identifier])
+
+    def test_room_has_device(self):
+        room = Room('1', 'Bedroom')
+        switch = Switch('2', 'Bedroom Switch', 'Generic')
+        self.assertFalse(room.has_device(switch))
+        room.add_device(switch)
+        self.assertTrue(room.has_device(switch))
 
 
 if __name__ == '__main__':
