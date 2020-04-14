@@ -5,10 +5,33 @@ from base64 import b64encode
 from typing import NoReturn, Optional
 
 import websockets
-from iolite.entity import Device, EntityFactory, Room
+from iolite import entity_factory
+from iolite.entity import Device, Room
 from iolite.request_handler import ClassMap, RequestHandler
 
 logger = logging.getLogger(__name__)
+
+
+class Discovered:
+    discovered: dict
+
+    def __init__(self):
+        self.discovered = {}
+
+    def add_room(self, room: Room) -> NoReturn:
+        self.discovered[room.identifier] = room
+
+    def add_device(self, device: Device) -> NoReturn:
+        pass
+
+    def find_room_by_identifier(self, identifier: str) -> Optional[Room]:
+        match = None
+        for room in self.discovered:
+            if room.identifier == identifier:
+                match = room
+                break
+
+        return match
 
 
 class IOLiteClient:
@@ -17,7 +40,6 @@ class IOLiteClient:
     def __init__(self, sid: str, username: str, password: str):
         self.discovered = []
         self.request_handler = RequestHandler()
-        self.entity_factory = EntityFactory()
         self.sid = sid
         self.username = username
         self.password = password
@@ -27,15 +49,6 @@ class IOLiteClient:
         request = json.dumps(request)
         await websocket.send(request)
         logger.info(f'Request sent {request}', extra={'request': request})
-
-    def __find_room_by_identifier(self, identifier: str) -> Optional[Room]:
-        match = None
-        for room in self.discovered:
-            if room.identifier == identifier:
-                match = room
-                break
-
-        return match
 
     def __get_default_headers(self) -> dict:
         user_pass = f'{self.username}:{self.password}'
@@ -89,7 +102,7 @@ class IOLiteClient:
 
             if response_dict.get('requestID').startswith('places'):
                 for value in response_dict.get('initialValues'):
-                    room = self.entity_factory.create(value)
+                    room = entity_factory.create(value)
                     logger.info(f'Setting up {room.name} ({room.identifier})')
                     self.discovered.append(room)
 
