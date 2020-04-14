@@ -91,9 +91,6 @@ class IOLiteClient:
         logger.info('Connecting to JSON WS')
         uri = f'{self.BASE_URL}/bus/websocket/application/json?SID={self.sid}'
         async with websockets.connect(uri, extra_headers=self.__get_default_headers()) as websocket:
-
-            self.websocket = websocket
-
             # Get Rooms
             request = self.request_handler.get_subscribe_request('places')
             await self.__send_request(request, websocket)
