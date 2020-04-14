@@ -23,10 +23,14 @@ def create(payload: dict) -> Optional[Entity]:
 
 
 def __create_device(identifier: str, type_name: str, payload: dict):
+
+    place_identifier = payload.get('placeIdentifier')
+
     if type_name == 'Lamp':
         return Lamp(
             identifier,
             payload.get('friendlyName'),
+            place_identifier,
             payload.get('manufacturer')
         )
 
@@ -34,13 +38,15 @@ def __create_device(identifier: str, type_name: str, payload: dict):
         return Switch(
             identifier,
             payload.get('friendlyName'),
+            place_identifier,
             payload.get('manufacturer')
         )
 
     if type_name == 'Lamp':
         return Lamp(
-            id,
+            identifier,
             payload.get('friendlyName'),
+            place_identifier,
             payload.get('manufacturer')
         )
 
@@ -55,6 +61,7 @@ def __create_device(identifier: str, type_name: str, payload: dict):
         return RadiatorValve(
             identifier,
             payload.get('friendlyName'),
+            place_identifier,
             payload.get('manufacturer'),
             current_env_temp,
             battery_level,

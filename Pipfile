@@ -9,11 +9,13 @@ pylama = "*"
 twine = "*"
 pre-commit = "*"
 isort = "*"
+coverage = "*"
 
 [packages]
 websockets = "*"
 environs = "*"
 requests = "*"
+coverage = "*"
 
 [requires]
 python_version = "3.8"

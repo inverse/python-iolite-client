@@ -14,19 +14,36 @@ logger = logging.getLogger(__name__)
 
 class Discovered:
     discovered: dict
+    unmapped_devices: dict
 
     def __init__(self):
         self.discovered = {}
+        self.unmapped_devices = {}
 
     def add_room(self, room: Room) -> NoReturn:
         self.discovered[room.identifier] = room
 
+        if room.identifier in self.unmapped_devices:
+            for device in self.unmapped_devices[room.identifier]:
+                room.add_device(device)
+            self.unmapped_devices.pop(room.identifier)
+
     def add_device(self, device: Device) -> NoReturn:
-        pass
+        room = self.find_room_by_identifier(device.place_identifier)
+
+        if not room:
+            if device.place_identifier not in self.unmapped_devices:
+                self.unmapped_devices[device.place_identifier] = []
+
+            self.unmapped_devices[device.place_identifier].append(device)
+
+            return
+
+        room.add_device(device)
 
     def find_room_by_identifier(self, identifier: str) -> Optional[Room]:
         match = None
-        for room in self.discovered:
+        for room in self.discovered.values():
             if room.identifier == identifier:
                 match = room
                 break
@@ -38,7 +55,7 @@ class IOLiteClient:
     BASE_URL = 'wss://remote.iolite.de'
 
     def __init__(self, sid: str, username: str, password: str):
-        self.discovered = []
+        self.discovered = Discovered()
         self.request_handler = RequestHandler()
         self.sid = sid
         self.username = username
@@ -103,25 +120,24 @@ class IOLiteClient:
             if response_dict.get('requestID').startswith('places'):
                 for value in response_dict.get('initialValues'):
                     room = entity_factory.create(value)
+                    if not isinstance(room, Room):
+                        logger.warning(f'Entity factory created unsupported class ({type(room).__name__})')
+                        continue
+
+                    self.discovered.add_room(room)
                     logger.info(f'Setting up {room.name} ({room.identifier})')
-                    self.discovered.append(room)
 
             if response_dict.get('requestID').startswith('devices'):
                 for value in response_dict.get('initialValues'):
-                    room_id = value.get('placeIdentifier')
-
-                    room = self.__find_room_by_identifier(room_id)
-                    if not room:
-                        self.discovered.append()
-
-                    device = self.entity_factory.create(value)
+                    device = entity_factory.create(value)
                     if not isinstance(device, Device):
                         logger.warning(f'Entity factory created unsupported class ({type(device).__name__})')
                         continue
 
-                    logger.info(f'Adding {type(device).__name__} ({device.name}) to {room.name}')
-
-                    room.add_device(device)
+                    self.discovered.add_device(device)
+                    room = self.discovered.find_room_by_identifier(device.place_identifier)
+                    room_name = room.name or 'unknown'
+                    logger.info(f'Adding {type(device).__name__} ({device.name}) to {room_name}')
 
         elif response_class == ClassMap.QuerySuccess.value:
             logger.info('Handling QuerySuccess')
