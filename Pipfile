@@ -9,6 +9,7 @@ pylama = "*"
 twine = "*"
 pre-commit = "*"
 isort = "*"
+coverage = "*"
 
 [packages]
 websockets = "*"

@@ -2,22 +2,61 @@ import asyncio
 import json
 import logging
 from base64 import b64encode
-from typing import NoReturn
+from typing import NoReturn, Optional
 
 import websockets
-from iolite.entity import Device, EntityFactory, Room
+from iolite import entity_factory
+from iolite.entity import Device, Room
 from iolite.request_handler import ClassMap, RequestHandler
 
 logger = logging.getLogger(__name__)
+
+
+class Discovered:
+    discovered: dict
+    unmapped_devices: dict
+
+    def __init__(self):
+        self.discovered = {}
+        self.unmapped_devices = {}
+
+    def add_room(self, room: Room) -> NoReturn:
+        self.discovered[room.identifier] = room
+
+        if room.identifier in self.unmapped_devices:
+            for device in self.unmapped_devices[room.identifier]:
+                room.add_device(device)
+            self.unmapped_devices.pop(room.identifier)
+
+    def add_device(self, device: Device) -> NoReturn:
+        room = self.find_room_by_identifier(device.place_identifier)
+
+        if not room:
+            if device.place_identifier not in self.unmapped_devices:
+                self.unmapped_devices[device.place_identifier] = []
+
+            self.unmapped_devices[device.place_identifier].append(device)
+
+            return
+
+        room.add_device(device)
+
+    def find_room_by_identifier(self, identifier: str) -> Optional[Room]:
+        match = None
+        for room in self.discovered.values():
+            if room.identifier == identifier:
+                match = room
+                break
+
+        return match
 
 
 class IOLiteClient:
     BASE_URL = 'wss://remote.iolite.de'
 
     def __init__(self, sid: str, username: str, password: str):
-        self.discovered = []
+        self.discovered = Discovered()
         self.request_handler = RequestHandler()
-        self.entity_factory = EntityFactory()
         self.sid = sid
         self.username = username
         self.password = password
@@ -27,15 +66,6 @@ class IOLiteClient:
         request = json.dumps(request)
         await websocket.send(request)
         logger.info(f'Request sent {request}', extra={'request': request})
-
-    def __find_room_by_identifier(self, identifier: str) -> Room:
-        match = None
-        for room in self.discovered:
-            if room.identifier == identifier:
-                match = room
-                break
-
-        return match
 
     def __get_default_headers(self) -> dict:
         user_pass = f'{self.username}:{self.password}'
@@ -61,17 +91,15 @@ class IOLiteClient:
         logger.info('Connecting to JSON WS')
         uri = f'{self.BASE_URL}/bus/websocket/application/json?SID={self.sid}'
         async with websockets.connect(uri, extra_headers=self.__get_default_headers()) as websocket:
-
             # Get Rooms
             request = self.request_handler.get_subscribe_request('places')
             await self.__send_request(request, websocket)
-
-            await asyncio.sleep(1)
 
             # Get Devices
             request = self.request_handler.get_subscribe_request('devices')
             await self.__send_request(request, websocket)
 
+            # Get Profiles
             request = self.request_handler.get_query_request('situationProfileModel')
             await self.__send_request(request, websocket)
 
@@ -88,26 +116,25 @@ class IOLiteClient:
 
             if response_dict.get('requestID').startswith('places'):
                 for value in response_dict.get('initialValues'):
-                    room = self.entity_factory.create(value)
-                    logger.info(f'Setting up {room.name}')
-                    self.discovered.append(room)
+                    room = entity_factory.create(value)
+                    if not isinstance(room, Room):
+                        logger.warning(f'Entity factory created unsupported class ({type(room).__name__})')
+                        continue
+
+                    self.discovered.add_room(room)
+                    logger.info(f'Setting up {room.name} ({room.identifier})')
 
             if response_dict.get('requestID').startswith('devices'):
                 for value in response_dict.get('initialValues'):
-                    room_id = value.get('placeIdentifier')
-
-                    room = self.__find_room_by_identifier(room_id)
-                    if not room:
-                        continue
-
-                    device = self.entity_factory.create(value)
+                    device = entity_factory.create(value)
                     if not isinstance(device, Device):
                         logger.warning(f'Entity factory created unsupported class ({type(device).__name__})')
                         continue
 
-                    logger.info(f'Adding {type(device).__name__} ({device.name}) to {room.name}')
-
-                    room.add_device(device)
+                    self.discovered.add_device(device)
+                    room = self.discovered.find_room_by_identifier(device.place_identifier)
+                    room_name = room.name or 'unknown'
+                    logger.info(f'Adding {type(device).__name__} ({device.name}) to {room_name}')
 
         elif response_class == ClassMap.QuerySuccess.value:
             logger.info('Handling QuerySuccess')
