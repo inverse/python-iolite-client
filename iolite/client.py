@@ -13,6 +13,8 @@ logger = logging.getLogger(__name__)
 
 
 class Discovered:
+    """ Contains the discovered devices. """
+
     discovered: dict
     unmapped_devices: dict
 
@@ -21,6 +23,12 @@ class Discovered:
         self.unmapped_devices = {}
 
     def add_room(self, room: Room) -> NoReturn:
+        """
+        Add a room.
+
+        :param room: The room to add
+        :return:
+        """
         self.discovered[room.identifier] = room
 
         if room.identifier in self.unmapped_devices:
@@ -29,6 +37,12 @@ class Discovered:
             self.unmapped_devices.pop(room.identifier)
 
     def add_device(self, device: Device) -> NoReturn:
+        """
+        Add a device. If the room exists will map it, otherwise will add to unmapped dict.
+
+        :param device: The device to add
+        :return:
+        """
         room = self.find_room_by_identifier(device.place_identifier)
 
         if not room:
@@ -42,6 +56,12 @@ class Discovered:
         room.add_device(device)
 
     def find_room_by_identifier(self, identifier: str) -> Optional[Room]:
+        """
+        Find a room by the given identifier.
+
+        :param identifier: The identifier
+        :return: The matched room or None
+        """
         match = None
         for room in self.discovered.values():
             if room.identifier == identifier:
@@ -52,6 +72,7 @@ class Discovered:
 
 
 class IOLiteClient:
+    """ The main client. """
     BASE_URL = 'wss://remote.iolite.de'
 
     def __init__(self, sid: str, username: str, password: str):
@@ -65,7 +86,7 @@ class IOLiteClient:
     async def __send_request(request: dict, websocket) -> NoReturn:
         request = json.dumps(request)
         await websocket.send(request)
-        logger.info(f'Request sent {request}', extra={'request': request})
+        logger.debug(f'Request sent {request}', extra={'request': request})
 
     def __get_default_headers(self) -> dict:
         user_pass = f'{self.username}:{self.password}'
@@ -78,14 +99,14 @@ class IOLiteClient:
         uri = f'{self.BASE_URL}/heating/ws?SID={self.sid}'
         async with websockets.connect(uri, extra_headers=self.__get_default_headers()) as websocket:
             async for response in websocket:
-                logger.info(f'Response received (heating) {response}', extra={'response': response})
+                logger.debug(f'Response received (heating) {response}', extra={'response': response})
 
     async def __devices_handler(self) -> NoReturn:
         logger.info('Connecting to devices WS')
         uri = f'{self.BASE_URL}/devices/ws?SID={self.sid}'
         async with websockets.connect(uri, extra_headers=self.__get_default_headers()) as websocket:
             async for response in websocket:
-                logger.info(f'Response received (device) {response}', extra={'response': response})
+                logger.debug(f'Response received (device) {response}', extra={'response': response})
 
     async def __handler(self) -> NoReturn:
         logger.info('Connecting to JSON WS')
@@ -104,7 +125,7 @@ class IOLiteClient:
             await self.__send_request(request, websocket)
 
             async for response in websocket:
-                logger.info(f'Response received (JSON) {response}', extra={'response': response})
+                logger.debug(f'Response received (JSON) {response}', extra={'response': response})
                 await self.__response_handler(response, websocket)
 
     async def __response_handler(self, response: str, websocket) -> NoReturn:
