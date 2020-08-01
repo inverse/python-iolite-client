@@ -10,6 +10,8 @@ twine = "*"
 pre-commit = "*"
 isort = "*"
 coverage = "*"
+pytest-cov = "*"
+codacy-coverage = "*"
 
 [packages]
 websockets = "*"

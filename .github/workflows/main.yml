@@ -30,4 +30,9 @@ jobs:
     - name: Install pip dependencies
       run: pipenv install -d
     - name: Test
-      run: pipenv run pytest
+      run: pipenv run pytest --cov-report xml --cov=iolite test/
+    - name: Upload coverage
+      if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+      run: pipenv run python-codacy-coverage -r coverage.xml
+      env:
+        CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
