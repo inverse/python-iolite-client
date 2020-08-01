@@ -5,6 +5,7 @@ from base64 import b64encode
 from typing import NoReturn, Optional
 
 import websockets
+
 from iolite import entity_factory
 from iolite.entity import Device, Room
 from iolite.request_handler import ClassMap, RequestHandler
