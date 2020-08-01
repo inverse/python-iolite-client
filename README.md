@@ -10,8 +10,8 @@ Build by reverse engineering the [Deutsche Wohnen][2] [MIA Android App][1].
 
 # Requirements
 
-- Python 3.8
-- Pipenv
+-  Python 3.8
+-  Pipenv
 
 # Getting credentials
 
@@ -21,21 +21,21 @@ Open your Deutsche Wohnen tablet and begin pairing device process. Scan QR code 
 {"webApp":"/ui/","code":"<redacted>","basicAuth":"<redacted>"}
 ```
 
-- `basicAuth` contains base64 encoded HTTP basic username and password.
+-  `basicAuth` contains base64 encoded HTTP basic username and password.
    Decode this to get the `:` separated `user:pass`.
-- `code` is the pairing code
+-  `code` is the pairing code
 
 # Playground
 
-- Copy `.env.example` to `.env`
-- Add your credentials to `.env` following the above process
-- init your pipenv environment (`pipenv install`)
-- Run `pipenv run python example.py`
+-  Copy `.env.example` to `.env`
+-  Add your credentials to `.env` following the above process
+-  init your pipenv environment (`pipenv install`)
+-  Run `pipenv run python example.py`
 
 Once you've generated the `SID` you can use it in conjunction with the HTTP basic authentication credentials to access
 the remote UI on your browser of choice.
 
-```
+```text
 https://remote.iolite.de/ui/?SID=<SID>
 ```
 
