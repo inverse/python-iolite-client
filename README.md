@@ -1,6 +1,8 @@
 # Python IOLite Client
 
 ![CI](https://github.com/inverse/python-iolite-client/workflows/CI/badge.svg)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/a38c5dbfc12247c893b4f39db4fac2b2)](https://www.codacy.com/manual/inverse/python-iolite-client?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=inverse/python-iolite-client&amp;utm_campaign=Badge_Grade)
+[![Codacy Badge](https://app.codacy.com/project/badge/Coverage/a38c5dbfc12247c893b4f39db4fac2b2)](https://www.codacy.com/manual/inverse/python-iolite-client?utm_source=github.com&utm_medium=referral&utm_content=inverse/python-iolite-client&utm_campaign=Badge_Coverage)
 
 WIP Python client for [IOLite's][0] remote API.
 
