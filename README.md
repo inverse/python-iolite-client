@@ -8,6 +8,8 @@ WIP Python client for [IOLite's][0] remote API.
 
 Build by reverse engineering the [Deutsche Wohnen][2] [MIA Android App][1].
 
+The client is very incomplete and non-functional but the authentication layer and basic command models are in place.
+
 ## Requirements
 
 -   Python 3.8
@@ -24,19 +26,17 @@ Open your Deutsche Wohnen tablet and begin pairing device process. Scan QR code 
 -   `basicAuth` contains base64 encoded HTTP basic username and password. Decode this to get the `:` separated `user:pass`.
 -   `code` is the pairing code
 
-## Playground
+## Development
 
 -   Copy `.env.example` to `.env`
 -   Add your credentials to `.env` following the above process
 -   Init your pipenv environment (`pipenv install`)
--   Run `pipenv run python example.py`
 
-Once you've generated the `SID` you can use it in conjunction with the HTTP basic authentication credentials to access
-the remote UI on your browser of choice.
+## Access remote UI
 
-```text
-https://remote.iolite.de/ui/?SID=<SID>
-```
+Run `pipenv run python example.py` and copy the URL to your browser of choice.
+
+You will need the HTTP basic credentials you defined earlier within the `.env` file.
 
 ## Licence
 
