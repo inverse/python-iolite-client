@@ -1,4 +1,3 @@
-import random
 import string
 import time
 from enum import Enum
@@ -79,9 +78,8 @@ class RequestHandler:
         return request
 
     def _get_request_id(self, prefix: str) -> str:
-        letters = string.ascii_letters
         while True:
-            request_id = ''.join(random.choice(letters) for i in range(10))
+            request_id = ''.join(secrets.choice(string.ascii_letters) for i in range(10))
             request_id = f'{prefix}_{request_id}'
             if request_id not in self.request_stack:
                 return request_id
