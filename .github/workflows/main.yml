@@ -14,8 +14,6 @@ jobs:
     - uses: dschep/install-pipenv-action@v1
     - name: Install pip dependencies
       run: pipenv install -d
-    - name: Lint
-      run: pipenv run pylama
     - name: pre-commit
       run: pipenv run pre-commit run --all-files --show-diff-on-failure
   test:

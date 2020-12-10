@@ -11,8 +11,8 @@ logger = logging.getLogger(__name__)
 
 
 class OAuthHandler:
-    BASE_URL = 'https://remote.iolite.de'
-    CLIENT_ID = 'deuwo_mia_app'
+    BASE_URL = "https://remote.iolite.de"
+    CLIENT_ID = "deuwo_mia_app"
 
     def __init__(self, username: str, password: str):
         self.username = username
@@ -25,15 +25,19 @@ class OAuthHandler:
         :param name: The name of the device being paired
         :return:
         """
-        query = urlencode({
-            'client_id': self.CLIENT_ID,
-            'grant_type': 'authorization_code',
-            'code': code,
-            'name': name
-        })
+        query = urlencode(
+            {
+                "client_id": self.CLIENT_ID,
+                "grant_type": "authorization_code",
+                "code": code,
+                "name": name,
+            }
+        )
 
         try:
-            response = requests.post(f'{self.BASE_URL}/ui/token?{query}', auth=(self.username, self.password))
+            response = requests.post(
+                f"{self.BASE_URL}/ui/token?{query}", auth=(self.username, self.password)
+            )
             response.raise_for_status()
             json_dict = json.loads(response.text)
             return json_dict
@@ -47,14 +51,18 @@ class OAuthHandler:
         :param refresh_token: The refresh token
         :return: dict containing access token, and new refresh token
         """
-        query = urlencode({
-            'client_id': self.CLIENT_ID,
-            'grant_type': 'refresh_token',
-            'refresh_token': refresh_token,
-        })
+        query = urlencode(
+            {
+                "client_id": self.CLIENT_ID,
+                "grant_type": "refresh_token",
+                "refresh_token": refresh_token,
+            }
+        )
 
         try:
-            response = requests.post(f'{self.BASE_URL}/ui/token?{query}', auth=(self.username, self.password))
+            response = requests.post(
+                f"{self.BASE_URL}/ui/token?{query}", auth=(self.username, self.password)
+            )
             response.raise_for_status()
             json_dict = json.loads(response.text)
             return json_dict
@@ -68,37 +76,40 @@ class OAuthHandler:
         :param access_token: Valid access token
         :return: SID
         """
-        query = urlencode({
-            'access_token': access_token,
-        })
+        query = urlencode(
+            {
+                "access_token": access_token,
+            }
+        )
 
         try:
-            response = requests.get(f'{self.BASE_URL}/ui/sid?{query}', auth=(self.username, self.password))
+            response = requests.get(
+                f"{self.BASE_URL}/ui/sid?{query}", auth=(self.username, self.password)
+            )
             response.raise_for_status()
             json_dict = json.loads(response.text)
-            return json_dict.get('SID')
+            return json_dict.get("SID")
         except Exception as e:
             logger.exception(e)
             raise e
 
 
 class OAuthStorage:
-
     def __init__(self, path: str):
         self.path = path
 
     def store_access_token(self, payload: dict):
-        expires_at = time.time() + payload['expires_in']
-        payload.update({'expires_at': expires_at})
-        self.__store('access_token', payload)
+        expires_at = time.time() + payload["expires_in"]
+        payload.update({"expires_at": expires_at})
+        self.__store("access_token", payload)
 
     def fetch_access_token(self) -> Optional[dict]:
-        return self.__fetch('access_token')
+        return self.__fetch("access_token")
 
     def __store(self, payload_type: str, payload: dict):
         path = self.__get_path(payload_type)
 
-        with open(path, 'w') as f:
+        with open(path, "w") as f:
             content = json.dumps(payload)
             f.write(content)
 
@@ -113,7 +124,7 @@ class OAuthStorage:
             return json.loads(content)
 
     def __get_path(self, payload_type: str):
-        return os.path.join(self.path, f'{payload_type}.json')
+        return os.path.join(self.path, f"{payload_type}.json")
 
 
 class OAuthWrapper:
@@ -135,13 +146,15 @@ class OAuthWrapper:
             access_token = self.oauth_handler.get_access_token(code, name)
             self.oauth_storage.store_access_token(access_token)
 
-        expires_at = access_token['expires_at']
+        expires_at = access_token["expires_at"]
 
         if expires_at < time.time():
-            refreshed_token = self.oauth_handler.get_new_access_token(access_token['refresh_token'])
+            refreshed_token = self.oauth_handler.get_new_access_token(
+                access_token["refresh_token"]
+            )
             self.oauth_storage.store_access_token(refreshed_token)
-            token = refreshed_token['access_token']
+            token = refreshed_token["access_token"]
         else:
-            token = access_token['access_token']
+            token = access_token["access_token"]
 
         return self.oauth_handler.get_sid(token)
