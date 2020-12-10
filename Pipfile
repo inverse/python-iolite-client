@@ -6,9 +6,7 @@ verify_ssl = true
 [dev-packages]
 pytest = "*"
 pylama = "*"
-twine = "*"
 pre-commit = "*"
-isort = "*"
 coverage = "*"
 pytest-cov = "*"
 codacy-coverage = "*"
