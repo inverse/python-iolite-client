@@ -28,13 +28,14 @@ Open your Deutsche Wohnen tablet and begin pairing device process. Scan QR code 
 
 ## Development
 
--   Copy `.env.example` to `.env`
--   Add your credentials to `.env` following the above process
 -   Init your pipenv environment (`pipenv install`)
+-   Copy `.env.example` to `.env`
+-   Decode credentials (`pipenv run python scripts/get_credentials.py <basic-auth-value>`)
+-   Add your credentials to `.env` following the above process
 
 ## Access remote UI
 
-Run `pipenv run python example.py` and copy the URL to your browser of choice.
+Run `pipenv run python scripts/example.py` and copy the URL to your browser of choice.
 
 You will need the HTTP basic credentials you defined earlier within the `.env` file.
 
