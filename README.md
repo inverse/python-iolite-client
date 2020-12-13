@@ -6,13 +6,13 @@
 
 WIP Python client for [IOLite's][0] remote API.
 
-Build by reverse engineering the [Deutsche Wohnen][2] [MIA Android App][1].
+Build by reverse engineering the [Deutsche Wohnen][2] [MIA Android App][1]. I wrote a [short post][3] on how I achieved that.
 
 The client is very incomplete and non-functional but the authentication layer and basic command models are in place.
 
 ## Requirements
 
--   Python 3.8
+-   Python 3.6+
 -   Pipenv
 
 ## Getting credentials
@@ -33,6 +33,12 @@ Open your Deutsche Wohnen tablet and begin pairing device process. Scan QR code 
 -   Decode credentials (`pipenv run python scripts/get_credentials.py <basic-auth-value>`)
 -   Add your credentials to `.env` following the above process
 
+The [pre-commit][4] framework is used enforce some linting and style compliance on CI.
+
+To get the same behaviour locally you can run `pre-commit install` within your activated venv.
+
+Alternatively to run manually you can run `pre-commit run -a`.
+
 ## Access remote UI
 
 Run `pipenv run python scripts/example.py` and copy the URL to your browser of choice.
@@ -46,3 +52,5 @@ MIT
 [0]: https://iolite.de/
 [1]: https://play.google.com/store/apps/details?id=de.iolite.client.android.mia
 [2]: https://deutsche-wohnen.com/
+[3]: https://www.malachisoord.com/2020/08/06/reverse-engineering-iolite-remote-api/
+[4]: https://pre-commit.com/
