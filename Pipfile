@@ -18,6 +18,7 @@ isort = "*"
 websockets = "*"
 environs = "*"
 requests = "*"
+isort = "==4.3.21"
 
 [requires]
 python_version = "3.8"
