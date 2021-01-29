@@ -1,5 +1,4 @@
 import logging
-import os
 
 from environs import Env
 from iolite.client import IOLiteClient
@@ -8,11 +7,11 @@ from iolite.oauth_handler import OAuthHandler, OAuthStorage, OAuthWrapper
 env = Env()
 env.read_env()
 
-USERNAME = os.getenv("HTTP_USERNAME")
-PASSWORD = os.getenv("HTTP_PASSWORD")
-CODE = os.getenv("CODE")
-NAME = os.getenv("NAME")
-LOG_LEVEL = os.getenv("LOG_LEVEL", logging.INFO)
+USERNAME = env("HTTP_USERNAME")
+PASSWORD = env("HTTP_PASSWORD")
+CODE = env("CODE")
+NAME = env("NAME")
+LOG_LEVEL = env.log_level("LOG_LEVEL", logging.INFO)
 
 logging.basicConfig(level=logging.getLevelName(LOG_LEVEL))
 logger = logging.getLogger(__name__)
