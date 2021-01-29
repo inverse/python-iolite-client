@@ -151,34 +151,10 @@ class IOLiteClient:
             logger.info("Handling SubscribeSuccess")
 
             if response_dict.get("requestID").startswith("places"):
-                for value in response_dict.get("initialValues"):
-                    room = entity_factory.create(value)
-                    if not isinstance(room, Room):
-                        logger.warning(
-                            f"Entity factory created unsupported class ({type(room).__name__})"
-                        )
-                        continue
-
-                    self.discovered.add_room(room)
-                    logger.info(f"Setting up {room.name} ({room.identifier})")
+                self.__handle_place_response(response_dict)
 
             if response_dict.get("requestID").startswith("devices"):
-                for value in response_dict.get("initialValues"):
-                    device = entity_factory.create(value)
-                    if not isinstance(device, Device):
-                        logger.warning(
-                            f"Entity factory created unsupported class ({type(device).__name__})"
-                        )
-                        continue
-
-                    self.discovered.add_device(device)
-                    room = self.discovered.find_room_by_identifier(
-                        device.place_identifier
-                    )
-                    room_name = room.name or "unknown"
-                    logger.info(
-                        f"Adding {type(device).__name__} ({device.name}) to {room_name}"
-                    )
+                self.__handle_device_response(response_dict)
 
         elif response_class == ClassMap.QuerySuccess.value:
             logger.info("Handling QuerySuccess")
@@ -194,6 +170,34 @@ class IOLiteClient:
             logger.error(
                 f"Unsupported response {response_dict}",
                 extra={"response_class": response_class},
+            )
+
+    def __handle_place_response(self, response_dict: dict):
+        for value in response_dict.get("initialValues"):
+            room = entity_factory.create(value)
+            if not isinstance(room, Room):
+                logger.warning(
+                    f"Entity factory created unsupported class ({type(room).__name__})"
+                )
+                continue
+
+            self.discovered.add_room(room)
+            logger.info(f"Setting up {room.name} ({room.identifier})")
+
+    def __handle_device_response(self, response_dict: dict):
+        for value in response_dict.get("initialValues"):
+            device = entity_factory.create(value)
+            if not isinstance(device, Device):
+                logger.warning(
+                    f"Entity factory created unsupported class ({type(device).__name__})"
+                )
+                continue
+
+            self.discovered.add_device(device)
+            room = self.discovered.find_room_by_identifier(device.place_identifier)
+            room_name = room.name or "unknown"
+            logger.info(
+                f"Adding {type(device).__name__} ({device.name}) to {room_name}"
             )
 
     def connect(self):
