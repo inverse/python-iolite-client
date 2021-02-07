@@ -6,3 +6,6 @@ use_parentheses = true
 ensure_newline_before_comments = true
 line_length = 88
 known_third_party="iolite"
+
+[tool.black]
+line-length = 88
