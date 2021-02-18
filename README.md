@@ -15,8 +15,8 @@ heating intervals are available.
 
 ## Requirements
 
-- Python 3.6+
-- [Pipenv][4]
+-   Python 3.6+
+-   [Pipenv][4]
 
 ## Getting credentials
 
@@ -31,17 +31,17 @@ opening the QR code in your browser, copy it's content. You'll get the following
 }
 ```
 
-- `basicAuth` contains base64 encoded HTTP basic username and password. Decode this to get the `:` separated `user:pass`.
-- `code` is the pairing code
+-   `basicAuth` contains base64 encoded HTTP basic username and password. Decode this to get the `:` separated `user:pass`.
+-   `code` is the pairing code
 
 You can decode the base64 encoded basicAuth information using the `scripts/get_credentials.py` script (see [development](#development) section).
 
 ## Development
 
-- Init your pipenv environment (`pipenv install`)
-- Copy `.env.example` to `.env`
-- Decode credentials (`pipenv run python scripts/get_credentials.py <basic-auth-value>`)
-- Add your credentials to `.env` following the above process
+-   Init your pipenv environment (`pipenv install`)
+-   Copy `.env.example` to `.env`
+-   Decode credentials (`pipenv run python scripts/get_credentials.py <basic-auth-value>`)
+-   Add your credentials to `.env` following the above process
 
 The [pre-commit][5] framework is used enforce some linting and style compliance on CI.
 

@@ -10,7 +10,7 @@ class TestClient(unittest.TestCase):
     def setUpClass(cls) -> None:
         sid = "MySID"
         username = "Charlie"
-        password = "charlies_secret_password"
+        password = "charlies_secret_password"  # nosec to disable hardcoded_password_string warning
         auth_value = b64encode(f"{username}:{password}".encode()).decode("ascii")
         cls.room_id = "placeIdentifier-1"
         cls.client = HeatingScheduler(sid, username, password, cls.room_id)
