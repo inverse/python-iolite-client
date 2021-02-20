@@ -21,4 +21,5 @@ setup(
     install_requires=["requests", "websockets", "environs"],
     test_requires=["pylama", "pytest"],
     name="iolite",
+    dependency_links=[],
 )
