@@ -16,6 +16,3 @@ pipenv-setup = "*"
 websockets = "*"
 environs = "*"
 requests = "*"
-
-[requires]
-python_version = "3.9"
