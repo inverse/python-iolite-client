@@ -1,7 +1,10 @@
+import datetime
 import unittest
+from unittest.mock import Mock
 
 import responses
-from iolite.oauth_handler import OAuthHandler
+from freezegun import freeze_time
+from iolite.oauth_handler import OAuthHandler, OAuthWrapper
 from requests import HTTPError
 
 
@@ -29,3 +32,20 @@ class OAuthHandlerTest(unittest.TestCase):
         oauth_handler = OAuthHandler("user", "password")
         response = oauth_handler.get_access_token("real-code", "my-device")
         self.assertIsInstance(response, dict)
+
+
+class OAuthWrapperTest(unittest.TestCase):
+    @freeze_time("2021-01-01 00:00:00")
+    def test_get_sid_valid_access_token(self):
+        mock_oauth_handler = Mock()
+        mock_oauth_storage = Mock()
+
+        mock_oauth_storage.fetch_access_token.return_value = {
+            "expires_at": datetime.datetime(2021, 1, 1, 0, 0, 1).timestamp(),
+            "access_token": "access-token",
+        }
+
+        oauth_wrapper = OAuthWrapper(mock_oauth_handler, mock_oauth_storage)
+
+        oauth_wrapper.get_sid("my-code", "my-device")
+        mock_oauth_handler.get_sid.assert_called_once_with("access-token")

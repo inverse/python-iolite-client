@@ -13,6 +13,7 @@ codacy-coverage = "*"
 pipenv-setup = "*"
 responses = "*"
 pytest-socket = "*"
+freezegun = "*"
 
 [packages]
 websockets = "*"
