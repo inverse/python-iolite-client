@@ -11,6 +11,8 @@ coverage = "*"
 pytest-cov = "*"
 codacy-coverage = "*"
 pipenv-setup = "*"
+responses = "*"
+pytest-socket = "*"
 
 [packages]
 websockets = "*"
