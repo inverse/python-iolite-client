@@ -1,6 +1,9 @@
 name: CI
 
-on: [push, pull_request]
+on:
+  push:
+    branches: [master]
+  pull_request: ~
 
 jobs:
   lint:
@@ -33,7 +36,7 @@ jobs:
     - name: Test
       run: pipenv run pytest --cov-report xml --cov=iolite test/
     - name: Upload coverage
-      if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+      if: matrix.python-version == 3.9
       run: pipenv run python-codacy-coverage -r coverage.xml
       env:
         CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
