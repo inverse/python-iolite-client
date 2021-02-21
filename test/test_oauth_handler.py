@@ -35,17 +35,58 @@ class OAuthHandlerTest(unittest.TestCase):
 
 
 class OAuthWrapperTest(unittest.TestCase):
+    def setUp(self) -> None:
+        self.mock_oauth_handler = Mock()
+        self.mock_oauth_storage = Mock()
+
     @freeze_time("2021-01-01 00:00:00")
     def test_get_sid_valid_access_token(self):
-        mock_oauth_handler = Mock()
-        mock_oauth_storage = Mock()
-
-        mock_oauth_storage.fetch_access_token.return_value = {
+        self.mock_oauth_storage.fetch_access_token.return_value = {
             "expires_at": datetime.datetime(2021, 1, 1, 0, 0, 1).timestamp(),
             "access_token": "access-token",
         }
 
-        oauth_wrapper = OAuthWrapper(mock_oauth_handler, mock_oauth_storage)
+        oauth_wrapper = OAuthWrapper(self.mock_oauth_handler, self.mock_oauth_storage)
 
         oauth_wrapper.get_sid("my-code", "my-device")
-        mock_oauth_handler.get_sid.assert_called_once_with("access-token")
+        self.mock_oauth_handler.get_sid.assert_called_once_with("access-token")
+
+    @freeze_time("2021-01-01 00:00:00")
+    def test_get_sid_nothing_stored(self):
+        self.mock_oauth_storage.fetch_access_token.return_value = None
+
+        response = {
+            "expires_at": datetime.datetime(2021, 1, 1, 0, 0, 1).timestamp(),
+            "access_token": "access-token",
+        }
+
+        self.mock_oauth_handler.get_access_token.return_value = response
+
+        oauth_wrapper = OAuthWrapper(self.mock_oauth_handler, self.mock_oauth_storage)
+
+        oauth_wrapper.get_sid("my-code", "my-device")
+        self.mock_oauth_storage.store_access_token.assert_called_once_with(response)
+        self.mock_oauth_handler.get_sid.assert_called_once_with("access-token")
+
+    @freeze_time("2021-01-01 00:00:01")
+    def test_get_sid_expired_access_token(self):
+        self.mock_oauth_storage.fetch_access_token.return_value = {
+            "expires_at": datetime.datetime(2021, 1, 1, 0, 0, 0).timestamp(),
+            "access_token": "access-token",
+            "refresh_token": "refresh-token",
+        }
+
+        response = {
+            "expires_at": datetime.datetime(2021, 1, 10, 0, 0, 0).timestamp(),
+            "access_token": "access-token",
+        }
+
+        self.mock_oauth_handler.get_new_access_token.return_value = response
+
+        oauth_wrapper = OAuthWrapper(self.mock_oauth_handler, self.mock_oauth_storage)
+        oauth_wrapper.get_sid("my-code", "my-device")
+        self.mock_oauth_handler.get_new_access_token.assert_called_once_with(
+            "refresh-token"
+        )
+        self.mock_oauth_storage.store_access_token.assert_called_once_with(response)
+        self.mock_oauth_handler.get_sid.assert_called_once_with("access-token")
