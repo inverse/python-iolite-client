@@ -3,7 +3,7 @@ import json
 import logging
 from base64 import b64encode
 from collections import defaultdict
-from typing import List, NoReturn, Optional
+from typing import Dict, List, NoReturn, Optional
 
 import websockets
 from iolite import entity_factory
@@ -16,11 +16,11 @@ logger = logging.getLogger(__name__)
 class Discovered:
     """ Contains the discovered devices. """
 
-    discovered: dict
+    discovered_rooms: Dict[str, Room]
     unmapped_devices: defaultdict
 
     def __init__(self):
-        self.discovered = {}
+        self.discovered_rooms = {}
         self.unmapped_devices = defaultdict(list)
 
     def add_room(self, room: Room) -> NoReturn:
@@ -30,7 +30,7 @@ class Discovered:
         :param room: The room to add
         :return:
         """
-        self.discovered[room.identifier] = room
+        self.discovered_rooms[room.identifier] = room
 
         if room.identifier in self.unmapped_devices:
             for device in self.unmapped_devices[room.identifier]:
@@ -67,9 +67,11 @@ class Discovered:
         """
         return self._find_room_by_attribute_value("name", name)
 
-    def _find_room_by_attribute_value(self, attribute: str, value: str):
+    def _find_room_by_attribute_value(
+        self, attribute: str, value: str
+    ) -> Optional[Room]:
         match = None
-        for room in self.discovered.values():
+        for room in self.discovered_rooms.values():
             if getattr(room, attribute) == value:
                 match = room
                 break
@@ -81,9 +83,7 @@ class Discovered:
 
         :return: The list of discovered Room instances
         """
-        return list(
-            filter(lambda entity: isinstance(entity, Room), self.discovered.values())
-        )
+        return self.discovered_rooms.values()
 
 
 class IOLiteClient:

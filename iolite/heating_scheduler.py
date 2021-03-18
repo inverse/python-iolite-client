@@ -5,6 +5,9 @@ from typing import Tuple
 import requests
 from iolite.exceptions import IOLiteError
 
+IOLITE_BASE_TEMP = 14
+IOLITE_MAX_TEMP = 30
+
 
 class Day(Enum):
     """Day constants for heating intervals.
@@ -63,10 +66,11 @@ class HeatingScheduler(object):
         :param temperature: The temperature in degrees celcius
         :return: The API response
         """
-        temperature_within_range = 14 <= temperature <= 30
-        if not (temperature_within_range):
+        temperature_within_range = IOLITE_BASE_TEMP <= temperature <= IOLITE_MAX_TEMP
+        if not temperature_within_range:
             raise HeatingSchedulerError(
-                "The desired comfort temperature has to be between 14 and 30 degrees celsius."
+                f"The desired comfort temperature has to be between "
+                f"{IOLITE_BASE_TEMP} and {IOLITE_MAX_TEMP} degrees celsius."
             )
         url, params = self._prepare_request_arguments()
         response = requests.put(url, json={"comfortTemperature": temperature}, **params)

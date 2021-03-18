@@ -38,7 +38,7 @@ You can decode the base64 encoded basicAuth information using the `scripts/get_c
 
 ## Development
 
--   Init your pipenv environment (`pipenv install`)
+-   Init your pipenv environment (`pipenv install --dev`)
 -   Copy `.env.example` to `.env`
 -   Decode credentials (`pipenv run python scripts/get_credentials.py <basic-auth-value>`)
 -   Add your credentials to `.env` following the above process
@@ -58,7 +58,20 @@ You will need the HTTP basic credentials you defined earlier within the `.env` f
 ## Usage example
 
 A jupyter notebook showcasing the heating interval scheduler can be found in `notebooks/Heating Scheduler.ipynb`. To
-access the notebook run the `pipenv run jupyter notebook` command.
+access the notebook install [jupyter notebook or jupyter lab](https://jupyter.org/install.html) into the virtual environment and run the notebook:
+
+```sh
+pipenv shell
+pip install notebook
+jupyter notebook
+```
+
+If running the notebook gives you a `ModuleNotFoundError`, you may fix this issue by changing the notebook's kernel (following [this StackOverflow post](https://stackoverflow.com/a/47296960/50913)):
+```sh
+pipenv shell
+python -m ipykernel install --user --name=`basename $VIRTUAL_ENV`
+```
+And then switch the kernel in the notebook's top menu under: _Kernel > Change Kernel_.
 
 ## Licence
 
