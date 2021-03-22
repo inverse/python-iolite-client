@@ -179,7 +179,6 @@ class IOLiteClient:
             await self.__send_request(request, websocket)
         elif response_class == ClassMap.ModelEventResponse.value:
             logger.info("Handling ModelEventResponse")
-            pass
             # TODO: Update entity states
         else:
             logger.error(
