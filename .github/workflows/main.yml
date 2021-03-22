@@ -24,9 +24,6 @@ jobs:
       matrix:
         python-version: [3.9, 3.8]
     runs-on: ubuntu-18.04
-    env:
-      IS_COVERAGE_ALLOWED: ${{ secrets.CODACY_PROJECT_TOKEN != '' }}
-      IS_MASTER_BRANCH: ${{ github.ref == 'refs/heads/master' }}
     steps:
     - uses: actions/checkout@master
     - uses: actions/setup-python@v1
@@ -39,7 +36,7 @@ jobs:
     - name: Test
       run: pipenv run pytest --cov-report xml --cov=iolite test/
     - name: Upload coverage
-      if: matrix.python-version == 3.9 && $IS_COVERAGE_ALLOWED && $IS_MASTER_BRANCH
+      if: matrix.python-version == 3.9 && ${{ secrets.CODACY_PROJECT_TOKEN != '' }} && ${{ github.ref == 'refs/heads/master' }}
       uses: codacy/codacy-coverage-reporter-action@master
       with:
         project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
