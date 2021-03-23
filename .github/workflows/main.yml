@@ -10,10 +10,15 @@ jobs:
     runs-on: ubuntu-18.04
     steps:
     - uses: actions/checkout@master
+    - uses: actions/cache@v2
+      with:
+        path: ~/.local/share/virtualenvs
+        key: ${{ runner.os }}-pipenv-${{ hashFiles('Pipfile.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-pipenv-
     - uses: actions/setup-python@v1
       with:
         python-version: 3.9
-        architecture: 'x64'
     - uses: dschep/install-pipenv-action@v1
     - name: Install pip dependencies
       run: pipenv install -d
@@ -29,6 +34,12 @@ jobs:
       IS_MASTER_BRANCH: ${{ github.ref == 'refs/heads/master' }}
     steps:
     - uses: actions/checkout@master
+    - uses: actions/cache@v2
+      with:
+        path: ~/.local/share/virtualenvs
+        key: ${{ runner.os }}-${{ matrix.python-version }}-pipenv-${{ hashFiles('Pipfile.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-${{ matrix.python-version }}-pipenv-
     - uses: actions/setup-python@v1
       with:
         python-version: ${{ matrix.python-version }}
@@ -48,6 +59,12 @@ jobs:
     runs-on: ubuntu-18.04
     steps:
     - uses: actions/checkout@v2
+    - uses: actions/cache@v2
+      with:
+        path: ~/.local/share/virtualenvs
+        key: ${{ runner.os }}-pipenv-${{ hashFiles('Pipfile.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-pipenv-
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
