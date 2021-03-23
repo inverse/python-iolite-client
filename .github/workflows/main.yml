@@ -28,6 +28,10 @@ jobs:
       IS_COVERAGE_ALLOWED: ${{ secrets.CODACY_PROJECT_TOKEN != '' }}
       IS_MASTER_BRANCH: ${{ github.ref == 'refs/heads/master' }}
     steps:
+    - name: Debug
+      run: |
+        echo "IS_MASTER_BRANCH: ${{ env.IS_MASTER_BRANCH }}"
+        echo "IS_COVERAGE_ALLOWED: ${{ env.IS_COVERAGE_ALLOWED }}"
     - uses: actions/checkout@master
     - uses: actions/setup-python@v1
       with:
