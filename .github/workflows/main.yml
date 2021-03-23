@@ -28,13 +28,22 @@ jobs:
       IS_COVERAGE_ALLOWED: ${{ secrets.CODACY_PROJECT_TOKEN != '' }}
       IS_MASTER_BRANCH: ${{ github.ref == 'refs/heads/master' }}
     steps:
-    - name: Debug
-      run: |
-        echo "IS_MASTER_BRANCH: ${{ env.IS_MASTER_BRANCH }}"
-        echo "IS_COVERAGE_ALLOWED: ${{ env.IS_COVERAGE_ALLOWED }}"
-    - name: Debug Block
-      if: ${{ env.IS_MASTER_BRANCH == true }}
-      run: echo "This should not be printed"
+    - uses: actions/checkout@master
+    - uses: actions/setup-python@v1
+      with:
+        python-version: ${{ matrix.python-version }}
+        architecture: 'x64'
+    - uses: dschep/install-pipenv-action@v1
+    - name: Install pip dependencies
+      run: pipenv install -d
+    - name: Test
+      run: pipenv run pytest --cov-report xml --cov=iolite test/
+    - name: Upload coverage
+      if: ${{ matrix.python-version == 3.9 && env.IS_COVERAGE_ALLOWED == true && env.IS_MASTER_BRANCH == true }}
+      uses: codacy/codacy-coverage-reporter-action@master
+      with:
+        project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
+        coverage-reports: coverage.xml
   check-dependency-sync:
     runs-on: ubuntu-18.04
     steps:
