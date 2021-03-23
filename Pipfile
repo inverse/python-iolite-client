@@ -9,7 +9,6 @@ pylama = "*"
 pre-commit = "*"
 coverage = "*"
 pytest-cov = "*"
-codacy-coverage = "*"
 iolite = {editable = true,path = "."}
 black = "==19.10b0"
 toml = "*"
