@@ -33,7 +33,7 @@ jobs:
         echo "IS_MASTER_BRANCH: ${{ env.IS_MASTER_BRANCH }}"
         echo "IS_COVERAGE_ALLOWED: ${{ env.IS_COVERAGE_ALLOWED }}"
     - name: Debug Block
-      if: ${{ matrix.python-version == 3.9 && env.IS_MASTER_BRANCH  && env.IS_COVERAGE_ALLOWED }}
+      if: ${{ matrix.python-version == 3.9 && env.IS_MASTER_BRANCH && env.IS_COVERAGE_ALLOWED }}
       run: echo "This should not be printed"
     - uses: actions/checkout@master
     - uses: actions/setup-python@v1
