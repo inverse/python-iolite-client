@@ -33,7 +33,7 @@ jobs:
         echo "IS_MASTER_BRANCH: ${{ env.IS_MASTER_BRANCH }}"
         echo "IS_COVERAGE_ALLOWED: ${{ env.IS_COVERAGE_ALLOWED }}"
     - name: Debug Block
-      if: ${{ env.IS_MASTER_BRANCH }}
+      if: ${{ env.IS_MASTER_BRANCH == true }}
       run: echo "This should not be printed"
   check-dependency-sync:
     runs-on: ubuntu-18.04
