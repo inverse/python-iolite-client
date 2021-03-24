@@ -10,7 +10,7 @@ WIP Python client for [IOLite's][0] remote API.
 Build by reverse engineering the [Deutsche Wohnen][2] [MIA Android App][1]. I wrote a [short post][3] on how I achieved
 that.
 
-The client is still incomplete, but the authentication layer, some basic command models and a client to change the
+The client is still incomplete, but the authentication layer, some basic command models, and a client to change the
 heating intervals are available.
 
 ## Requirements
