@@ -33,6 +33,12 @@ jobs:
       IS_COVERAGE_ALLOWED: ${{ secrets.CODACY_PROJECT_TOKEN != '' }}
       IS_MASTER_BRANCH: ${{ github.ref == 'refs/heads/master' }}
     steps:
+    - name: Debug
+      run: |
+        echo "IS_COVERAGE_ALLOWED: ${{ env.IS_COVERAGE_ALLOWED }}"
+        echo "IS_MASTER_BRANCH: ${{ env.IS_MASTER_BRANCH }}"
+        echo "matrix.python-version": ${{ matrix.python-version }}
+        echo "matrix.python-version == 3.9": ${{ matrix.python-version == 3.9 }}
     - uses: actions/checkout@master
     - uses: actions/cache@v2
       with:
