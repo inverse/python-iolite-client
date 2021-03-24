@@ -9,8 +9,12 @@ pylama = "*"
 pre-commit = "*"
 coverage = "*"
 pytest-cov = "*"
-pipenv-setup = "*"
+iolite = {editable = true,path = "."}
+black = "==19.10b0"
+toml = "*"
 responses = "*"
+isort = "==4.3.21"
+pipenv-setup = "*"
 pytest-socket = "*"
 freezegun = "*"
 
@@ -18,3 +22,6 @@ freezegun = "*"
 websockets = "*"
 environs = "*"
 requests = "*"
+
+[pipenv]
+allow_prereleases = true

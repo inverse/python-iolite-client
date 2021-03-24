@@ -2,7 +2,8 @@ import asyncio
 import json
 import logging
 from base64 import b64encode
-from typing import NoReturn, Optional
+from collections import defaultdict
+from typing import Dict, List, NoReturn, Optional
 
 import websockets
 from iolite import entity_factory
@@ -15,12 +16,12 @@ logger = logging.getLogger(__name__)
 class Discovered:
     """ Contains the discovered devices. """
 
-    discovered: dict
-    unmapped_devices: dict
+    discovered_rooms: Dict[str, Room]
+    unmapped_devices: defaultdict
 
     def __init__(self):
-        self.discovered = {}
-        self.unmapped_devices = {}
+        self.discovered_rooms = {}
+        self.unmapped_devices = defaultdict(list)
 
     def add_room(self, room: Room) -> NoReturn:
         """
@@ -29,7 +30,7 @@ class Discovered:
         :param room: The room to add
         :return:
         """
-        self.discovered[room.identifier] = room
+        self.discovered_rooms[room.identifier] = room
 
         if room.identifier in self.unmapped_devices:
             for device in self.unmapped_devices[room.identifier]:
@@ -45,30 +46,44 @@ class Discovered:
         """
         room = self.find_room_by_identifier(device.place_identifier)
 
-        if not room:
-            if device.place_identifier not in self.unmapped_devices:
-                self.unmapped_devices[device.place_identifier] = []
-
+        if room:
+            room.add_device(device)
+        else:
             self.unmapped_devices[device.place_identifier].append(device)
 
-            return
-
-        room.add_device(device)
-
     def find_room_by_identifier(self, identifier: str) -> Optional[Room]:
-        """
-        Find a room by the given identifier.
+        """Finds a room by the given identifier.
 
         :param identifier: The identifier
         :return: The matched room or None
         """
+        return self._find_room_by_attribute_value("identifier", identifier)
+
+    def find_room_by_name(self, name: str) -> Optional[Room]:
+        """Finds a room by the given name.
+
+        :param name: The name
+        :return: The matched room or None
+        """
+        return self._find_room_by_attribute_value("name", name)
+
+    def _find_room_by_attribute_value(
+        self, attribute: str, value: str
+    ) -> Optional[Room]:
         match = None
-        for room in self.discovered.values():
-            if room.identifier == identifier:
+        for room in self.discovered_rooms.values():
+            if getattr(room, attribute) == value:
                 match = room
                 break
 
         return match
+
+    def get_rooms(self) -> List[Room]:
+        """Returns all discovered rooms.
+
+        :return: The list of discovered Room instances
+        """
+        return self.discovered_rooms.values()
 
 
 class IOLiteClient:
@@ -151,34 +166,10 @@ class IOLiteClient:
             logger.info("Handling SubscribeSuccess")
 
             if response_dict.get("requestID").startswith("places"):
-                for value in response_dict.get("initialValues"):
-                    room = entity_factory.create(value)
-                    if not isinstance(room, Room):
-                        logger.warning(
-                            f"Entity factory created unsupported class ({type(room).__name__})"
-                        )
-                        continue
-
-                    self.discovered.add_room(room)
-                    logger.info(f"Setting up {room.name} ({room.identifier})")
+                self.__handle_place_response(response_dict)
 
             if response_dict.get("requestID").startswith("devices"):
-                for value in response_dict.get("initialValues"):
-                    device = entity_factory.create(value)
-                    if not isinstance(device, Device):
-                        logger.warning(
-                            f"Entity factory created unsupported class ({type(device).__name__})"
-                        )
-                        continue
-
-                    self.discovered.add_device(device)
-                    room = self.discovered.find_room_by_identifier(
-                        device.place_identifier
-                    )
-                    room_name = room.name or "unknown"
-                    logger.info(
-                        f"Adding {type(device).__name__} ({device.name}) to {room_name}"
-                    )
+                self.__handle_device_response(response_dict)
 
         elif response_class == ClassMap.QuerySuccess.value:
             logger.info("Handling QuerySuccess")
@@ -195,8 +186,42 @@ class IOLiteClient:
                 extra={"response_class": response_class},
             )
 
+    def __handle_place_response(self, response_dict: dict):
+        for value in response_dict.get("initialValues"):
+            room = entity_factory.create(value)
+            if not isinstance(room, Room):
+                logger.warning(
+                    f"Entity factory created unsupported class ({type(room).__name__})"
+                )
+                continue
+
+            self.discovered.add_room(room)
+            logger.info(f"Setting up {room.name} ({room.identifier})")
+
+    def __handle_device_response(self, response_dict: dict):
+        for value in response_dict.get("initialValues"):
+            device = entity_factory.create(value)
+            if not isinstance(device, Device):
+                logger.warning(
+                    f"Entity factory created unsupported class ({type(device).__name__})"
+                )
+                continue
+
+            self.discovered.add_device(device)
+            room = self.discovered.find_room_by_identifier(device.place_identifier)
+            room_name = room.name or "unknown"
+            logger.info(
+                f"Adding {type(device).__name__} ({device.name}) to {room_name}"
+            )
+
     def connect(self):
+        """Connects to the remote endpoint of the heating system."""
         loop = asyncio.get_event_loop()
         loop.create_task(self.__handler())
         loop.create_task(self.__devices_handler())
         loop.run_forever()
+
+    def discover(self) -> NoReturn:
+        """Discovers the entities registered with the heating system."""
+        asyncio.create_task(self.__handler())
+        asyncio.create_task(self.__devices_handler())

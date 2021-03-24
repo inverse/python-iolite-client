@@ -1,0 +1,2 @@
+class IOLiteError(Exception):
+    pass
