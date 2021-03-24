@@ -39,6 +39,7 @@ jobs:
         echo "IS_MASTER_BRANCH: ${{ env.IS_MASTER_BRANCH }}"
         echo "matrix.python-version": ${{ matrix.python-version }}
         echo "matrix.python-version == 3.9": ${{ matrix.python-version == 3.9 }}
+        echo "all true: ${{ matrix.python-version == 3.9 && env.IS_COVERAGE_ALLOWED == true && env.IS_MASTER_BRANCH == true }}
     - uses: actions/checkout@master
     - uses: actions/cache@v2
       with:
