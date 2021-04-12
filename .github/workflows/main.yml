@@ -19,7 +19,8 @@ jobs:
     - uses: actions/setup-python@v1
       with:
         python-version: 3.9
-    - uses: dschep/install-pipenv-action@v1
+    - name: Install pipenv
+      run: pip install pipenv
     - name: Install pip dependencies
       run: pipenv install -d
     - name: pre-commit
@@ -44,7 +45,8 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
         architecture: 'x64'
-    - uses: dschep/install-pipenv-action@v1
+    - name: Install pipenv
+      run: pip install pipenv
     - name: Install pip dependencies
       run: pipenv install -d
     - name: Test
@@ -70,7 +72,7 @@ jobs:
       with:
         python-version: 3.9
     - name: Install pipenv
-      run: python -m pip install --upgrade pipenv wheel
+      run: pip install pipenv
     - name: Install pip dependencies
       run: pipenv install -d
     - name: Check package sync
