@@ -34,16 +34,12 @@ class OAuthHandler:
             }
         )
 
-        try:
-            response = requests.post(
-                f"{self.BASE_URL}/ui/token?{query}", auth=(self.username, self.password)
-            )
-            response.raise_for_status()
-            json_dict = json.loads(response.text)
-            return json_dict
-        except Exception as e:
-            logger.exception(e)
-            raise e
+        response = requests.post(
+            f"{self.BASE_URL}/ui/token?{query}", auth=(self.username, self.password)
+        )
+        response.raise_for_status()
+        json_dict = json.loads(response.text)
+        return json_dict
 
     def get_new_access_token(self, refresh_token: str) -> dict:
         """
@@ -59,16 +55,12 @@ class OAuthHandler:
             }
         )
 
-        try:
-            response = requests.post(
-                f"{self.BASE_URL}/ui/token?{query}", auth=(self.username, self.password)
-            )
-            response.raise_for_status()
-            json_dict = json.loads(response.text)
-            return json_dict
-        except Exception as e:
-            logger.exception(e)
-            raise e
+        response = requests.post(
+            f"{self.BASE_URL}/ui/token?{query}", auth=(self.username, self.password)
+        )
+        response.raise_for_status()
+        json_dict = json.loads(response.text)
+        return json_dict
 
     def get_sid(self, access_token: str) -> str:
         """
@@ -82,16 +74,12 @@ class OAuthHandler:
             }
         )
 
-        try:
-            response = requests.get(
-                f"{self.BASE_URL}/ui/sid?{query}", auth=(self.username, self.password)
-            )
-            response.raise_for_status()
-            json_dict = json.loads(response.text)
-            return json_dict.get("SID")
-        except Exception as e:
-            logger.exception(e)
-            raise e
+        response = requests.get(
+            f"{self.BASE_URL}/ui/sid?{query}", auth=(self.username, self.password)
+        )
+        response.raise_for_status()
+        json_dict = json.loads(response.text)
+        return json_dict.get("SID")
 
 
 class OAuthStorage:
@@ -143,12 +131,14 @@ class OAuthWrapper:
         access_token = self.oauth_storage.fetch_access_token()
 
         if access_token is None:
+            logger.debug("No token, requesting")
             access_token = self.oauth_handler.get_access_token(code, name)
             self.oauth_storage.store_access_token(access_token)
 
         expires_at = access_token["expires_at"]
 
         if expires_at < time.time():
+            logger.debug("Token expired, refreshing")
             refreshed_token = self.oauth_handler.get_new_access_token(
                 access_token["refresh_token"]
             )
