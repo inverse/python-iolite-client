@@ -90,7 +90,7 @@ class RequestHandler:
     def _get_request_id(self, prefix: str) -> str:
         while True:
             request_id = "".join(
-                secrets.choice(string.ascii_letters) for i in range(10)
+                secrets.choice(string.ascii_letters) for _ in range(10)
             )
             request_id = f"{prefix}_{request_id}"
             if request_id not in self.request_stack:

@@ -7,11 +7,12 @@
 
 WIP Python client for [IOLite's][0] remote API.
 
-Build by reverse engineering the [Deutsche Wohnen][2] [MIA Android App][1]. I wrote a [short post][3] on how I achieved
-that.
-
 The client is still incomplete, but the authentication layer, some basic command models, and a client to change the
 heating intervals are available.
+
+Build by reverse engineering the [Deutsche Wohnen][2] [MIA Android App][1] and subsequently their remote API.
+
+Read the following [short post][3] on how that was achieved.
 
 ## Requirements
 
@@ -67,11 +68,13 @@ jupyter notebook
 ```
 
 If running the notebook gives you a `ModuleNotFoundError`, you may fix this issue by changing the notebook's kernel (following [this StackOverflow post](https://stackoverflow.com/a/47296960/50913)):
+
 ```sh
 pipenv shell
 python -m ipykernel install --user --name=`basename $VIRTUAL_ENV`
 ```
-And then switch the kernel in the notebook's top menu under: _Kernel > Change Kernel_.
+
+Then switch the kernel in the notebook's top menu under: _Kernel > Change Kernel_.
 
 ## Licence
 
