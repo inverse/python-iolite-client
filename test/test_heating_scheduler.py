@@ -2,7 +2,12 @@ import unittest
 from base64 import b64encode
 
 import responses
-from iolite.heating_scheduler import Day, HeatingScheduler, HeatingSchedulerError
+from iolite.heating_scheduler import (
+    Day,
+    HeatingScheduler,
+    HeatingSchedulerError,
+    Temperature,
+)
 
 
 class TestClient(unittest.TestCase):
@@ -79,6 +84,21 @@ class TestClient(unittest.TestCase):
         responses.add(responses.DELETE, self.scheduler_endpoint + "/intervals/abc-def")
         self.client.delete_interval("abc-def")
         self.assertEqual(1, len(responses.calls))
+
+
+class TestTemperature(unittest.TestCase):
+    def test_within_range_valid(self):
+        self.assertTrue(Temperature.within_range(14))
+        self.assertTrue(Temperature.within_range(15))
+        self.assertTrue(Temperature.within_range(30))
+
+    def test_within_range_invalid(self):
+        self.assertFalse(Temperature.within_range(13.9))
+        self.assertFalse(Temperature.within_range(13))
+        self.assertFalse(Temperature.within_range(-1))
+        self.assertFalse(Temperature.within_range(30.1))
+        self.assertFalse(Temperature.within_range(31))
+        self.assertFalse(Temperature.within_range(9000))
 
 
 if __name__ == "__main__":

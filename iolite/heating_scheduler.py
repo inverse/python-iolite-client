@@ -1,15 +1,21 @@
 from base64 import b64encode
-from enum import Enum
+from enum import IntEnum
 from typing import Tuple
 
 import requests
 from iolite.exceptions import IOLiteError
 
-IOLITE_BASE_TEMP = 14
-IOLITE_MAX_TEMP = 30
+
+class Temperature:
+    BASE_TEMP = 14
+    MAX_TEMP = 30
+
+    @staticmethod
+    def within_range(temperature: float) -> bool:
+        return Temperature.BASE_TEMP <= temperature <= Temperature.MAX_TEMP
 
 
-class Day(Enum):
+class Day(IntEnum):
     """Day constants for heating intervals.
 
     The heating interval API does not have the concept of days. Instead, an interval starting at 0 is considered Monday
@@ -66,14 +72,14 @@ class HeatingScheduler(object):
         :param temperature: The temperature in degrees celcius
         :return: The API response
         """
-        temperature_within_range = IOLITE_BASE_TEMP <= temperature <= IOLITE_MAX_TEMP
-        if not temperature_within_range:
+        if not Temperature.within_range(temperature):
             raise HeatingSchedulerError(
                 f"The desired comfort temperature has to be between "
-                f"{IOLITE_BASE_TEMP} and {IOLITE_MAX_TEMP} degrees celsius."
+                f"{Temperature.BASE_TEMP} and {Temperature.MAX_TEMP} degrees celsius."
             )
         url, params = self._prepare_request_arguments()
         response = requests.put(url, json={"comfortTemperature": temperature}, **params)
+        response.raise_for_status()
         return response
 
     def add_interval(
@@ -96,6 +102,7 @@ class HeatingScheduler(object):
             },
             **params,
         )
+        response.raise_for_status()
         return response
 
     def delete_interval(self, interval_id: str) -> requests.Response:
@@ -106,4 +113,5 @@ class HeatingScheduler(object):
         """
         url, params = self._prepare_request_arguments()
         response = requests.delete(url + f"/intervals/{interval_id}", **params)
+        response.raise_for_status()
         return response
