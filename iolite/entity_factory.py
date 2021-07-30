@@ -4,7 +4,7 @@ from iolite.entity import Entity, Lamp, RadiatorValve, Room, Switch
 
 
 def create(payload: dict) -> Optional[Entity]:
-    """ Create entity from given payload. """
+    """Create entity from given payload."""
     entity_class = payload.get("class")
     identifier = payload.get("id")
 
