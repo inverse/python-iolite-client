@@ -39,7 +39,7 @@ You can decode the base64 encoded basicAuth information using the `scripts/get_c
 
 ## Development
 
--   Init your pipenv environment (`poetry install`)
+-   Init your virtualenv environment (`poetry install`)
 -   Copy `.env.example` to `.env`
 -   Decode credentials (`poetry run python scripts/get_credentials.py <basic-auth-value>`)
 -   Add your credentials to `.env` following the above process
