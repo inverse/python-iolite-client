@@ -3,12 +3,18 @@ name = "iolite"
 version = "0.1.0"
 description = "API client for interacting with IOLite's remote API"
 authors = ["Malachi Soord <me@malachisoord.com>"]
+license = "MIT"
+
+readme = "README.md"
+repository = "https://github.com/inverse/python-iolite-client"
+homepage = "https://github.com/inverse/python-iolite-client"
 
 [tool.poetry.dependencies]
 python = "^3.9"
 websockets = "*"
 environs = "*"
 requests = "*"
+single-source = "^0.2.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "*"
