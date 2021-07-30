@@ -13,7 +13,7 @@ def read_version(package):
 VERSION = read_version("iolite")
 
 setup(
-    description="API client for interacting with the https://remote.iolite.com/ API",
+    description="",
     author="Malachi Soord",
     author_email="me@malachisoord.com",
     url="https://github.com/inverse/python-iolite-client",

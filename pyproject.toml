@@ -1,3 +1,34 @@
+[tool.poetry]
+name = "iolite"
+version = "0.1.0"
+description = "API client for interacting with IOLite's remote API"
+authors = ["Malachi Soord <me@malachisoord.com>"]
+license = "MIT"
+
+readme = "README.md"
+repository = "https://github.com/inverse/python-iolite-client"
+homepage = "https://github.com/inverse/python-iolite-client"
+
+[tool.poetry.dependencies]
+python = "^3.6"
+websockets = "*"
+environs = "*"
+requests = "*"
+single-source = "^0.2.0"
+
+[tool.poetry.dev-dependencies]
+pytest = "*"
+pre-commit = "*"
+coverage = "*"
+pytest-cov = "*"
+responses = "*"
+pytest-socket = "*"
+freezegun = "*"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
 [tool.isort]
 multi_line_output = 3
 include_trailing_comma = true

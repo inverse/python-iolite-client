@@ -17,7 +17,7 @@ Read the following [short post][3] on how that was achieved.
 ## Requirements
 
 -   Python 3.6+
--   [Pipenv][4]
+-   [Poetry][4]
 
 ## Getting credentials
 
@@ -39,9 +39,9 @@ You can decode the base64 encoded basicAuth information using the `scripts/get_c
 
 ## Development
 
--   Init your pipenv environment (`pipenv install --dev`)
+-   Init your pipenv environment (`poetry install`)
 -   Copy `.env.example` to `.env`
--   Decode credentials (`pipenv run python scripts/get_credentials.py <basic-auth-value>`)
+-   Decode credentials (`poetry run python scripts/get_credentials.py <basic-auth-value>`)
 -   Add your credentials to `.env` following the above process
 
 The [pre-commit][5] framework is used enforce some linting and style compliance on CI.
@@ -52,7 +52,7 @@ Alternatively to run manually you can run `pre-commit run -a`.
 
 ## Access remote UI
 
-Run `pipenv run python scripts/example.py` and copy the URL to your browser of choice.
+Run `poetry run python scripts/example.py` and copy the URL to your browser of choice.
 
 You will need the HTTP basic credentials you defined earlier within the `.env` file.
 
@@ -62,7 +62,7 @@ A jupyter notebook showcasing the heating interval scheduler can be found in `no
 access the notebook install [jupyter notebook or jupyter lab](https://jupyter.org/install.html) into the virtual environment and run the notebook:
 
 ```sh
-pipenv shell
+poetry shell
 pip install notebook
 jupyter notebook
 ```
@@ -70,7 +70,7 @@ jupyter notebook
 If running the notebook gives you a `ModuleNotFoundError`, you may fix this issue by changing the notebook's kernel (following [this StackOverflow post](https://stackoverflow.com/a/47296960/50913)):
 
 ```sh
-pipenv shell
+poetry shell
 python -m ipykernel install --user --name=`basename $VIRTUAL_ENV`
 ```
 
@@ -88,6 +88,6 @@ MIT
 
 [3]: https://www.malachisoord.com/2020/08/06/reverse-engineering-iolite-remote-api/
 
-[4]: https://pipenv.pypa.io/en/latest/#install-pipenv-today
+[4]: https://python-poetry.org/
 
 [5]: https://pre-commit.com/
