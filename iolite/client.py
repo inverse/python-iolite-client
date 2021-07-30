@@ -6,6 +6,7 @@ from collections import defaultdict
 from typing import Dict, List, NoReturn, Optional
 
 import websockets
+
 from iolite import entity_factory
 from iolite.entity import Device, Room
 from iolite.request_handler import ClassMap, RequestHandler
@@ -14,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 class Discovered:
-    """ Contains the discovered devices. """
+    """Contains the discovered devices."""
 
     discovered_rooms: Dict[str, Room]
     unmapped_devices: defaultdict
@@ -87,7 +88,7 @@ class Discovered:
 
 
 class IOLiteClient:
-    """ The main client. """
+    """The main client."""
 
     BASE_URL = "wss://remote.iolite.de"
 

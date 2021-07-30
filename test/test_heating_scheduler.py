@@ -2,6 +2,7 @@ import unittest
 from base64 import b64encode
 
 import responses
+
 from iolite.heating_scheduler import (
     Day,
     HeatingScheduler,
