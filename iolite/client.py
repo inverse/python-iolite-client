@@ -9,7 +9,7 @@ import websockets
 
 from iolite import entity_factory
 from iolite.entity import Device, Room
-from iolite.request_handler import ClassMap, RequestHandler
+from iolite.request_handler import ClassMap, RequestHandler, RequestOptions
 
 logger = logging.getLogger(__name__)
 
@@ -148,7 +148,9 @@ class IOLiteClient:
             await self.__send_request(request, websocket)
 
             # Get Profiles
-            request = self.request_handler.get_query_request("situationProfileModel")
+            request = self.request_handler.get_query_request(
+                "situationProfileModel", RequestOptions(should_stop=True)
+            )
             await self.__send_request(request, websocket)
 
             async for response in websocket:
@@ -172,9 +174,6 @@ class IOLiteClient:
 
         elif response_class == ClassMap.QuerySuccess.value:
             logger.info("Handling QuerySuccess")
-            if self.stop_event:
-                logger.info("Stopping event loop")
-                self.stop_event.set()
         elif response_class == ClassMap.KeepAliveRequest.value:
             logger.info("Handling KeepAliveRequest")
             request = self.request_handler.get_keepalive_request()
@@ -187,6 +186,12 @@ class IOLiteClient:
                 f"Unsupported response {response_dict}",
                 extra={"response_class": response_class},
             )
+
+        request = self.request_handler.get_request(response_dict.get("requestID"))
+        if request.request_options and request.request_options.should_stop:
+            if self.stop_event:
+                logger.info("Stopping event loop")
+                self.stop_event.set()
 
     def _handle_place_response(self, response_dict: dict):
         for value in response_dict.get("initialValues"):
