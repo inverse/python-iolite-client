@@ -1,9 +1,10 @@
 import unittest
+from typing import Dict
 
 from iolite import entity_factory
 from iolite.entity import RadiatorValve
 
-EXAMPLE_HEATER = {
+EXAMPLE_HEATER: Dict = {
     "properties": [
         {
             "timestamp": 1580472165268,

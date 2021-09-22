@@ -1,4 +1,5 @@
 from abc import ABC
+from typing import Dict
 
 
 class Entity(ABC):
@@ -51,7 +52,7 @@ class RadiatorValve(Device):
 class Room(Entity):
     def __init__(self, identifier: str, name: str):
         super().__init__(identifier, name)
-        self.devices = {}
+        self.devices: Dict[str, Device] = {}
 
     def add_device(self, device: Device):
         if device.place_identifier != self.identifier:

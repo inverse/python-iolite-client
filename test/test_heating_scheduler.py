@@ -1,5 +1,6 @@
 import unittest
 from base64 import b64encode
+from typing import Dict
 
 import responses
 
@@ -12,14 +13,18 @@ from iolite.heating_scheduler import (
 
 
 class TestClient(unittest.TestCase):
+
+    client: HeatingScheduler
+    request_arguments: Dict
+    scheduler_endpoint: str
+
     @classmethod
     def setUpClass(cls) -> None:
         sid = "MySID"
         username = "Charlie"
         password = "charlies_secret_password"  # nosec to disable hardcoded_password_string warning
         auth_value = b64encode(f"{username}:{password}".encode()).decode("ascii")
-        cls.room_id = "placeIdentifier-1"
-        cls.client = HeatingScheduler(sid, username, password, cls.room_id)
+        cls.client = HeatingScheduler(sid, username, password, "placeIdentifier-1")
 
         cls.request_arguments = {
             "headers": {"Authorization": f"Basic {auth_value}"},
