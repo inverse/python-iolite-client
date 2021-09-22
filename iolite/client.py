@@ -3,7 +3,7 @@ import json
 import logging
 from base64 import b64encode
 from collections import defaultdict
-from typing import Dict, List, NoReturn, Optional
+from typing import Dict, List, Optional
 
 import websockets
 
@@ -21,7 +21,7 @@ class Discovered:
         self.discovered_rooms: Dict[str, Room] = {}
         self.unmapped_devices: defaultdict = defaultdict(list)
 
-    def add_room(self, room: Room) -> NoReturn:
+    def add_room(self, room: Room):
         """
         Add a room.
 
@@ -35,7 +35,7 @@ class Discovered:
                 room.add_device(device)
             self.unmapped_devices.pop(room.identifier)
 
-    def add_device(self, device: Device) -> NoReturn:
+    def add_device(self, device: Device):
         """
         Add a device. If the room exists will map it, otherwise will add to unmapped dict.
 
@@ -98,10 +98,10 @@ class IOLiteClient:
         self.stop_event: Optional[asyncio.Event] = None
 
     @staticmethod
-    async def __send_request(request: dict, websocket) -> NoReturn:
-        request = json.dumps(request)
-        await websocket.send(request)
-        logger.debug(f"Request sent {request}", extra={"request": request})
+    async def __send_request(request: dict, websocket):
+        encoded_request = json.dumps(request)
+        await websocket.send(encoded_request)
+        logger.debug("Request sent", extra={"request": encoded_request})
 
     def _get_default_headers(self) -> dict:
         user_pass = f"{self.username}:{self.password}"
@@ -110,7 +110,7 @@ class IOLiteClient:
 
         return headers
 
-    async def _heating_handler(self) -> NoReturn:
+    async def _heating_handler(self):
         uri = f"{self.BASE_URL}/heating/ws?SID={self.sid}"
         async with websockets.connect(
             uri, extra_headers=self._get_default_headers()
@@ -121,7 +121,7 @@ class IOLiteClient:
                     extra={"response": response},
                 )
 
-    async def _devices_handler(self) -> NoReturn:
+    async def _devices_handler(self):
         logger.info("Connecting to devices WS")
         uri = f"{self.BASE_URL}/devices/ws?SID={self.sid}"
         async with websockets.connect(
@@ -133,7 +133,7 @@ class IOLiteClient:
                     extra={"response": response},
                 )
 
-    async def _fetch(self) -> NoReturn:
+    async def _fetch(self):
         logger.info("Connecting to JSON WS")
         uri = f"{self.BASE_URL}/bus/websocket/application/json?SID={self.sid}"
         async with websockets.connect(
@@ -159,7 +159,7 @@ class IOLiteClient:
                 )
                 await self._fetch_response_handler(response, websocket)
 
-    async def _fetch_response_handler(self, response: str, websocket) -> NoReturn:
+    async def _fetch_response_handler(self, response: str, websocket):
         response_dict = json.loads(response)
         response_class = response_dict.get("class")
 
@@ -187,14 +187,18 @@ class IOLiteClient:
                 extra={"response_class": response_class},
             )
 
-        request = self.request_handler.get_request(response_dict.get("requestID"))
-        if request.request_options and request.request_options.should_stop:
+        send_request = self.request_handler.get_request(response_dict["requestID"])
+        if (
+            send_request
+            and send_request.request_options
+            and send_request.request_options.should_stop
+        ):
             if self.stop_event:
                 logger.info("Stopping event loop")
                 self.stop_event.set()
 
     def _handle_place_response(self, response_dict: dict):
-        for value in response_dict.get("initialValues"):
+        for value in response_dict["initialValues"]:
             room = entity_factory.create(value)
             if not isinstance(room, Room):
                 logger.warning(
@@ -206,7 +210,7 @@ class IOLiteClient:
             logger.info(f"Setting up {room.name} ({room.identifier})")
 
     def _handle_device_response(self, response_dict: dict):
-        for value in response_dict.get("initialValues"):
+        for value in response_dict["initialValues"]:
             device = entity_factory.create(value)
             if not isinstance(device, Device):
                 logger.warning(
@@ -216,7 +220,7 @@ class IOLiteClient:
 
             self.discovered.add_device(device)
             room = self.discovered.find_room_by_identifier(device.place_identifier)
-            room_name = room.name or "unknown"
+            room_name = room.name if room else "unknown"
             logger.info(
                 f"Adding {type(device).__name__} ({device.name}) to {room_name}"
             )
