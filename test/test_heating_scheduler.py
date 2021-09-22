@@ -3,6 +3,7 @@ from base64 import b64encode
 from typing import Dict
 
 import responses
+from responses.matchers import json_params_matcher
 
 from iolite.heating_scheduler import (
     Day,
@@ -51,7 +52,7 @@ class TestClient(unittest.TestCase):
         responses.add(
             responses.PUT,
             self.scheduler_endpoint,
-            match=[responses.json_params_matcher({"comfortTemperature": 20.5})],
+            match=[json_params_matcher({"comfortTemperature": 20.5})],
         )
         self.client.set_comfort_temperature(20.5)
         self.assertEqual(1, len(responses.calls))
@@ -74,7 +75,7 @@ class TestClient(unittest.TestCase):
             responses.POST,
             self.scheduler_endpoint + "/intervals",
             match=[
-                responses.json_params_matcher(
+                json_params_matcher(
                     {
                         "startTimeInMinutes": tuesday + two_thirty,
                         "durationInMinutes": 90,
