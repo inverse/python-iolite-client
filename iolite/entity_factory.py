@@ -15,9 +15,9 @@ def create(payload: dict) -> Optional[Entity]:
         raise Exception("Payload missing id")
 
     if entity_class == "Room":
-        return Room(identifier, payload.get("friendlyName"))
+        return Room(identifier, payload["friendlyName"])
     elif entity_class == "Device":
-        return __create_device(identifier, payload.get("typeName"), payload)
+        return __create_device(identifier, payload["typeName"], payload)
     else:
         raise NotImplementedError(
             f"An unsupported entity type was returned {entity_class}"
@@ -26,34 +26,34 @@ def create(payload: dict) -> Optional[Entity]:
 
 def __create_device(identifier: str, type_name: str, payload: dict):
 
-    place_identifier = payload.get("placeIdentifier")
+    place_identifier = payload["placeIdentifier"]
 
     if type_name == "Lamp":
         return Lamp(
             identifier,
-            payload.get("friendlyName"),
+            payload["friendlyName"],
             place_identifier,
-            payload.get("manufacturer"),
+            payload["manufacturer"],
         )
 
     if type_name == "TwoChannelRockerSwitch":
         return Switch(
             identifier,
-            payload.get("friendlyName"),
+            payload["friendlyName"],
             place_identifier,
-            payload.get("manufacturer"),
+            payload["manufacturer"],
         )
 
     if type_name == "Lamp":
         return Lamp(
             identifier,
-            payload.get("friendlyName"),
+            payload["friendlyName"],
             place_identifier,
-            payload.get("manufacturer"),
+            payload["manufacturer"],
         )
 
     if type_name == "Heater":
-        properties = payload.get("properties")
+        properties = payload["properties"]
 
         current_env_temp = __get_prop(properties, "currentEnvironmentTemperature")
         battery_level = __get_prop(properties, "batteryLevel")
@@ -62,9 +62,9 @@ def __create_device(identifier: str, type_name: str, payload: dict):
 
         return RadiatorValve(
             identifier,
-            payload.get("friendlyName"),
+            payload["friendlyName"],
             place_identifier,
-            payload.get("manufacturer"),
+            payload["manufacturer"],
             current_env_temp,
             battery_level,
             heating_mode,
@@ -81,7 +81,8 @@ def __get_prop(properties: list, key: str):
     :return:
     """
     result = list(filter(lambda prop: prop["name"] == key, properties))
-    value = None
-    if len(result) != 0:
-        value = result[0]
-    return value.get("value")
+
+    if len(result) == 0:
+        raise ValueError(f"Failed to find {key} in property set")
+
+    return result[0]["value"]
