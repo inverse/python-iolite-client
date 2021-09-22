@@ -17,12 +17,9 @@ logger = logging.getLogger(__name__)
 class Discovered:
     """Contains the discovered devices."""
 
-    discovered_rooms: Dict[str, Room]
-    unmapped_devices: defaultdict
-
     def __init__(self):
-        self.discovered_rooms = {}
-        self.unmapped_devices = defaultdict(list)
+        self.discovered_rooms: Dict[str, Room] = {}
+        self.unmapped_devices: defaultdict = defaultdict(list)
 
     def add_room(self, room: Room) -> NoReturn:
         """
@@ -84,7 +81,7 @@ class Discovered:
 
         :return: The list of discovered Room instances
         """
-        return self.discovered_rooms.values()
+        return list(self.discovered_rooms.values())
 
 
 class IOLiteClient:
@@ -98,6 +95,7 @@ class IOLiteClient:
         self.sid = sid
         self.username = username
         self.password = password
+        self.loop = None
 
     @staticmethod
     async def __send_request(request: dict, websocket) -> NoReturn:
@@ -174,13 +172,14 @@ class IOLiteClient:
 
         elif response_class == ClassMap.QuerySuccess.value:
             logger.info("Handling QuerySuccess")
+            self.loop.stop()
         elif response_class == ClassMap.KeepAliveRequest.value:
             logger.info("Handling KeepAliveRequest")
             request = self.request_handler.get_keepalive_request()
             await self.__send_request(request, websocket)
         elif response_class == ClassMap.ModelEventResponse.value:
             logger.info("Handling ModelEventResponse")
-            # TODO: Update entity states
+
         else:
             logger.error(
                 f"Unsupported response {response_dict}",
@@ -215,14 +214,9 @@ class IOLiteClient:
                 f"Adding {type(device).__name__} ({device.name}) to {room_name}"
             )
 
-    def connect(self):
-        """Connects to the remote endpoint of the heating system."""
-        loop = asyncio.get_event_loop()
-        loop.create_task(self.__handler())
-        loop.create_task(self.__devices_handler())
-        loop.run_forever()
-
-    def discover(self) -> NoReturn:
+    def discover(self):
         """Discovers the entities registered with the heating system."""
-        asyncio.create_task(self.__handler())
-        asyncio.create_task(self.__devices_handler())
+        self.loop = asyncio.get_event_loop()
+        self.loop.create_task(self.__handler())
+        self.loop.create_task(self.__devices_handler())
+        self.loop.run_forever()
