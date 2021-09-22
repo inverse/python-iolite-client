@@ -16,7 +16,7 @@ Read the following [short post][3] on how that was achieved.
 
 ## Requirements
 
--   Python 3.6+
+-   Python 3.7+
 -   [Poetry][4]
 
 ## Getting credentials
