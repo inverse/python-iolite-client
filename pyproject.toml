@@ -10,7 +10,7 @@ repository = "https://github.com/inverse/python-iolite-client"
 homepage = "https://github.com/inverse/python-iolite-client"
 
 [tool.poetry.dependencies]
-python = "^3.6.1"
+python = "^3.7"
 websockets = "*"
 environs = "*"
 requests = "*"

@@ -34,6 +34,11 @@ client = IOLiteClient(sid, USERNAME, PASSWORD)
 
 logger.info("Connecting to client")
 
-client.connect()
+client.discover()
 
 logger.info("Finished discovery")
+
+for room in client.discovered.get_rooms():
+    print(f"Room: {room.name} has {len(room.devices)}")
+    for device in room.devices:
+        print(f"- {device}")
