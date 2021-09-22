@@ -95,7 +95,7 @@ class IOLiteClient:
         self.sid = sid
         self.username = username
         self.password = password
-        self.loop = None
+        self.stop_event: Optional[asyncio.Event] = None
 
     @staticmethod
     async def __send_request(request: dict, websocket) -> NoReturn:
@@ -172,7 +172,9 @@ class IOLiteClient:
 
         elif response_class == ClassMap.QuerySuccess.value:
             logger.info("Handling QuerySuccess")
-            self.loop.stop()
+            if self.stop_event:
+                logger.info("Stopping event loop")
+                self.stop_event.set()
         elif response_class == ClassMap.KeepAliveRequest.value:
             logger.info("Handling KeepAliveRequest")
             request = self.request_handler.get_keepalive_request()
@@ -214,9 +216,13 @@ class IOLiteClient:
                 f"Adding {type(device).__name__} ({device.name}) to {room_name}"
             )
 
+    async def __discover(self):
+        self.stop_event = asyncio.Event()
+        loop = asyncio.get_event_loop()
+        loop.create_task(self.__handler())
+        loop.create_task(self.__devices_handler())
+        await self.stop_event.wait()
+
     def discover(self):
         """Discovers the entities registered with the heating system."""
-        self.loop = asyncio.get_event_loop()
-        self.loop.create_task(self.__handler())
-        self.loop.create_task(self.__devices_handler())
-        self.loop.run_forever()
+        asyncio.run(self.__discover())
