@@ -187,11 +187,11 @@ class IOLiteClient:
                 extra={"response_class": response_class},
             )
 
-        send_request = self.request_handler.get_request(response_dict["requestID"])
+        response_request = self.request_handler.get_request(response_dict["requestID"])
         if (
-            send_request
-            and send_request.request_options
-            and send_request.request_options.should_stop
+            response_request
+            and response_request.request_options
+            and response_request.request_options.should_stop
         ):
             if self.stop_event:
                 logger.info("Stopping event loop")
