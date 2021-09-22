@@ -103,17 +103,17 @@ class IOLiteClient:
         await websocket.send(request)
         logger.debug(f"Request sent {request}", extra={"request": request})
 
-    def __get_default_headers(self) -> dict:
+    def _get_default_headers(self) -> dict:
         user_pass = f"{self.username}:{self.password}"
         user_pass = b64encode(user_pass.encode()).decode("ascii")
         headers = {"Authorization": f"Basic {user_pass}"}
 
         return headers
 
-    async def __heating_handler(self) -> NoReturn:
+    async def _heating_handler(self) -> NoReturn:
         uri = f"{self.BASE_URL}/heating/ws?SID={self.sid}"
         async with websockets.connect(
-            uri, extra_headers=self.__get_default_headers()
+            uri, extra_headers=self._get_default_headers()
         ) as websocket:
             async for response in websocket:
                 logger.debug(
@@ -121,11 +121,11 @@ class IOLiteClient:
                     extra={"response": response},
                 )
 
-    async def __devices_handler(self) -> NoReturn:
+    async def _devices_handler(self) -> NoReturn:
         logger.info("Connecting to devices WS")
         uri = f"{self.BASE_URL}/devices/ws?SID={self.sid}"
         async with websockets.connect(
-            uri, extra_headers=self.__get_default_headers()
+            uri, extra_headers=self._get_default_headers()
         ) as websocket:
             async for response in websocket:
                 logger.debug(
@@ -133,11 +133,11 @@ class IOLiteClient:
                     extra={"response": response},
                 )
 
-    async def __handler(self) -> NoReturn:
+    async def _fetch(self) -> NoReturn:
         logger.info("Connecting to JSON WS")
         uri = f"{self.BASE_URL}/bus/websocket/application/json?SID={self.sid}"
         async with websockets.connect(
-            uri, extra_headers=self.__get_default_headers()
+            uri, extra_headers=self._get_default_headers()
         ) as websocket:
             # Get Rooms
             request = self.request_handler.get_subscribe_request("places")
@@ -155,9 +155,9 @@ class IOLiteClient:
                 logger.debug(
                     f"Response received (JSON) {response}", extra={"response": response}
                 )
-                await self.__response_handler(response, websocket)
+                await self._fetch_response_handler(response, websocket)
 
-    async def __response_handler(self, response: str, websocket) -> NoReturn:
+    async def _fetch_response_handler(self, response: str, websocket) -> NoReturn:
         response_dict = json.loads(response)
         response_class = response_dict.get("class")
 
@@ -165,10 +165,10 @@ class IOLiteClient:
             logger.info("Handling SubscribeSuccess")
 
             if response_dict.get("requestID").startswith("places"):
-                self.__handle_place_response(response_dict)
+                self._handle_place_response(response_dict)
 
             if response_dict.get("requestID").startswith("devices"):
-                self.__handle_device_response(response_dict)
+                self._handle_device_response(response_dict)
 
         elif response_class == ClassMap.QuerySuccess.value:
             logger.info("Handling QuerySuccess")
@@ -188,7 +188,7 @@ class IOLiteClient:
                 extra={"response_class": response_class},
             )
 
-    def __handle_place_response(self, response_dict: dict):
+    def _handle_place_response(self, response_dict: dict):
         for value in response_dict.get("initialValues"):
             room = entity_factory.create(value)
             if not isinstance(room, Room):
@@ -200,7 +200,7 @@ class IOLiteClient:
             self.discovered.add_room(room)
             logger.info(f"Setting up {room.name} ({room.identifier})")
 
-    def __handle_device_response(self, response_dict: dict):
+    def _handle_device_response(self, response_dict: dict):
         for value in response_dict.get("initialValues"):
             device = entity_factory.create(value)
             if not isinstance(device, Device):
@@ -216,13 +216,12 @@ class IOLiteClient:
                 f"Adding {type(device).__name__} ({device.name}) to {room_name}"
             )
 
-    async def __discover(self):
+    async def _async_discover(self):
         self.stop_event = asyncio.Event()
         loop = asyncio.get_event_loop()
-        loop.create_task(self.__handler())
-        loop.create_task(self.__devices_handler())
+        loop.create_task(self._fetch())
         await self.stop_event.wait()
 
     def discover(self):
         """Discovers the entities registered with the heating system."""
-        asyncio.run(self.__discover())
+        asyncio.run(self._async_discover())
