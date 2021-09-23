@@ -15,7 +15,7 @@ def create(payload: dict) -> Optional[Entity]:
         raise Exception("Payload missing id")
 
     if entity_class == "Room":
-        return Room(identifier, payload["friendlyName"])
+        return Room(identifier, payload["placeName"])
     elif entity_class == "Device":
         return __create_device(identifier, payload["typeName"], payload)
     else:
