@@ -19,7 +19,7 @@ class Discovered:
 
     def __init__(self):
         self.discovered_rooms: Dict[str, Room] = {}
-        self.unmapped_devices: defaultdict = defaultdict(list)
+        self.unmapped_entities: defaultdict = defaultdict(list)
 
     def add_room(self, room: Room):
         """
@@ -30,10 +30,13 @@ class Discovered:
         """
         self.discovered_rooms[room.identifier] = room
 
-        if room.identifier in self.unmapped_devices:
-            for device in self.unmapped_devices[room.identifier]:
-                room.add_device(device)
-            self.unmapped_devices.pop(room.identifier)
+        if room.identifier in self.unmapped_entities:
+            for entity in self.unmapped_entities[room.identifier]:
+                if isinstance(entity, Heating):
+                    room.add_heating(entity)
+                else:
+                    room.add_device(entity)
+            self.unmapped_entities.pop(room.identifier)
 
     def add_device(self, device: Device):
         """
@@ -47,7 +50,7 @@ class Discovered:
         if room:
             room.add_device(device)
         else:
-            self.unmapped_devices[device.place_identifier].append(device)
+            self.unmapped_entities[device.place_identifier].append(device)
 
     def add_heating(self, heating: Heating):
         """
@@ -61,7 +64,7 @@ class Discovered:
         if room:
             room.add_heating(heating)
         else:
-            self.unmapped_devices[heating.identifier].append(heating)
+            self.unmapped_entities[heating.identifier].append(heating)
 
     def find_room_by_identifier(self, identifier: str) -> Optional[Room]:
         """Finds a room by the given identifier.

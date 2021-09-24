@@ -16,14 +16,14 @@ class DiscoveredTest(unittest.TestCase):
 
     def test_switch_without_room_is_unmapped(self):
         self.discovered.add_device(self.bedroom_switch)
-        self.assertTrue(len(self.discovered.unmapped_devices) == 1)
+        self.assertTrue(len(self.discovered.unmapped_entities) == 1)
 
     def test_previously_unmapped_switch_gets_mapped_to_room(self):
-        self.discovered.unmapped_devices[self.bedroom_switch.place_identifier] = [
+        self.discovered.unmapped_entities[self.bedroom_switch.place_identifier] = [
             self.bedroom_switch
         ]
         self.discovered.add_room(self.bedroom)
-        self.assertTrue(len(self.discovered.unmapped_devices) == 0)
+        self.assertTrue(len(self.discovered.unmapped_entities) == 0)
         self.assertEqual(
             self.bedroom_switch, self.bedroom.devices[self.bedroom_switch.identifier]
         )
@@ -31,7 +31,7 @@ class DiscoveredTest(unittest.TestCase):
     def test_switch_gets_mapped_to_existing_room(self):
         self.discovered.add_room(self.bedroom)
         self.discovered.add_device(self.bedroom_switch)
-        self.assertTrue(len(self.discovered.unmapped_devices) == 0)
+        self.assertTrue(len(self.discovered.unmapped_entities) == 0)
         self.assertEqual(
             self.bedroom_switch, self.bedroom.devices[self.bedroom_switch.identifier]
         )
@@ -64,6 +64,13 @@ class DiscoveredTest(unittest.TestCase):
     def test_add_heating(self):
         self.discovered.add_room(self.bedroom)
         self.discovered.add_heating(self.bedroom_heating)
+        self.assertEqual(self.bedroom_heating, self.discovered.get_rooms()[0].heating)
+
+    def test_add_heating_unmapped(self):
+        self.discovered.add_heating(self.bedroom_heating)
+        self.assertTrue(len(self.discovered.unmapped_entities) == 1)
+        self.discovered.add_room(self.bedroom)
+        self.assertTrue(len(self.discovered.unmapped_entities) == 0)
         self.assertEqual(self.bedroom_heating, self.discovered.get_rooms()[0].heating)
 
 
