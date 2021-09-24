@@ -1,5 +1,5 @@
 from abc import ABC
-from typing import Dict
+from typing import Dict, Optional
 
 
 class Entity(ABC):
@@ -49,10 +49,20 @@ class RadiatorValve(Device):
         self.current_env_temp = current_env_temp
 
 
+class Heating(Entity):
+    def __init__(
+        self, identifier: str, name: str, current_temp: float, target_temp: float
+    ):
+        super().__init__(identifier, name)
+        self.current_temp = current_temp
+        self.target_temp = target_temp
+
+
 class Room(Entity):
     def __init__(self, identifier: str, name: str):
         super().__init__(identifier, name)
         self.devices: Dict[str, Device] = {}
+        self.heating: Optional[Heating] = None
 
     def add_device(self, device: Device):
         if device.place_identifier != self.identifier:
@@ -64,3 +74,10 @@ class Room(Entity):
 
     def has_device(self, device: Device) -> bool:
         return device.identifier in self.devices
+
+    def add_heating(self, heating: Heating):
+        if heating.identifier != self.identifier:
+            raise Exception(
+                f"Trying to add heating to wrong room {heating.identifier} != {self.identifier}"
+            )
+        self.heating = heating

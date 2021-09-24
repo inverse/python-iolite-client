@@ -3,12 +3,12 @@ import json
 import logging
 from base64 import b64encode
 from collections import defaultdict
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Union
 
 import websockets
 
 from iolite import entity_factory
-from iolite.entity import Device, Room
+from iolite.entity import Device, Heating, Room
 from iolite.request_handler import ClassMap, RequestHandler, RequestOptions
 
 logger = logging.getLogger(__name__)
@@ -48,6 +48,20 @@ class Discovered:
             room.add_device(device)
         else:
             self.unmapped_devices[device.place_identifier].append(device)
+
+    def add_heating(self, heating: Heating):
+        """
+        Add heating.
+
+        :param heating: The heating to add
+        :return:
+        """
+        room = self.find_room_by_identifier(heating.identifier)
+
+        if room:
+            room.add_heating(heating)
+        else:
+            self.unmapped_devices[heating.identifier].append(heating)
 
     def find_room_by_identifier(self, identifier: str) -> Optional[Room]:
         """Finds a room by the given identifier.
@@ -98,8 +112,11 @@ class IOLiteClient:
         self.stop_event: Optional[asyncio.Event] = None
 
     @staticmethod
-    async def __send_request(request: dict, websocket):
-        encoded_request = json.dumps(request)
+    async def __send_request(request: Union[str, dict], websocket):
+        if isinstance(request, dict):
+            encoded_request = json.dumps(request)
+        else:
+            encoded_request = request
         await websocket.send(encoded_request)
         logger.debug("Request sent", extra={"request": encoded_request})
 
@@ -110,7 +127,7 @@ class IOLiteClient:
 
         return headers
 
-    async def _heating_handler(self):
+    async def _fetch_heating(self):
         uri = f"{self.BASE_URL}/heating/ws?SID={self.sid}"
         async with websockets.connect(
             uri, extra_headers=self._get_default_headers()
@@ -120,6 +137,8 @@ class IOLiteClient:
                     f"Response received (heating) {response}",
                     extra={"response": response},
                 )
+
+                await self._heating_response_handler(response, websocket)
 
     async def _devices_handler(self):
         logger.info("Connecting to devices WS")
@@ -133,7 +152,11 @@ class IOLiteClient:
                     extra={"response": response},
                 )
 
-    async def _fetch(self):
+            while True:
+                await asyncio.sleep(5)
+                await self.__send_request("keep_alive", websocket)
+
+    async def _fetch_application(self):
         logger.info("Connecting to JSON WS")
         uri = f"{self.BASE_URL}/bus/websocket/application/json?SID={self.sid}"
         async with websockets.connect(
@@ -149,7 +172,7 @@ class IOLiteClient:
 
             # Get Profiles
             request = self.request_handler.get_query_request(
-                "situationProfileModel", RequestOptions(should_stop=True)
+                "situationProfileModel", RequestOptions(should_stop=False)
             )
             await self.__send_request(request, websocket)
 
@@ -157,9 +180,15 @@ class IOLiteClient:
                 logger.debug(
                     f"Response received (JSON) {response}", extra={"response": response}
                 )
-                await self._fetch_response_handler(response, websocket)
+                await self._application_response_handler(response, websocket)
 
-    async def _fetch_response_handler(self, response: str, websocket):
+    async def _heating_response_handler(self, response: str, websocket):
+        heatings_dict = json.loads(response)
+        for heating_dict in heatings_dict:
+            heating = entity_factory.create_heating(heating_dict)
+            self.discovered.add_heating(heating)
+
+    async def _application_response_handler(self, response: str, websocket):
         response_dict = json.loads(response)
         response_class = response_dict.get("class")
 
@@ -180,14 +209,18 @@ class IOLiteClient:
             await self.__send_request(request, websocket)
         elif response_class == ClassMap.ModelEventResponse.value:
             logger.info("Handling ModelEventResponse")
-
         else:
             logger.error(
                 f"Unsupported response {response_dict}",
                 extra={"response_class": response_class},
             )
 
-        response_request = self.request_handler.get_request(response_dict["requestID"])
+        request_id = response_dict.get("requestID")
+
+        if not request_id:
+            return
+
+        response_request = self.request_handler.get_request(request_id)
         if (
             response_request
             and response_request.request_options
