@@ -93,6 +93,12 @@ class RequestHandler:
     def get_request(self, request_id: str) -> Optional[Request]:
         return self.request_stack.get(request_id)
 
+    def pop_request(self, request_id: str) -> Optional[Request]:
+        return self.request_stack.pop(request_id)
+
+    def has_requests(self) -> bool:
+        return len(self.request_stack) != 0
+
     def _build_request(
         self,
         prefix: str,

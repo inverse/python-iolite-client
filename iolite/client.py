@@ -3,6 +3,7 @@ import json
 import logging
 from base64 import b64encode
 from collections import defaultdict
+from dataclasses import dataclass
 from typing import Dict, List, Optional, Union
 
 import websockets
@@ -101,6 +102,20 @@ class Discovered:
         return list(self.discovered_rooms.values())
 
 
+@dataclass
+class ClientResponse:
+    abort: bool
+    request: Optional[dict]
+
+    @staticmethod
+    def create_abort():
+        return ClientResponse(True, None)
+
+    @staticmethod
+    def create_continue(request: Optional[dict] = None):
+        return ClientResponse(False, request)
+
+
 class IOLiteClient:
     """The main client."""
 
@@ -141,7 +156,7 @@ class IOLiteClient:
                     extra={"response": response},
                 )
 
-                await self._heating_response_handler(response, websocket)
+                await self._heating_response_handler(response)
 
     async def _devices_handler(self):
         logger.info("Connecting to devices WS")
@@ -183,15 +198,20 @@ class IOLiteClient:
                 logger.debug(
                     f"Response received (JSON) {response}", extra={"response": response}
                 )
-                await self._application_response_handler(response, websocket)
+                response = await self._application_response_handler(response)
+                if response.abort:
+                    logger.info("Aborting")
 
-    async def _heating_response_handler(self, response: str, websocket):
+                if response.request:
+                    await self.__send_request(request, websocket)
+
+    async def _heating_response_handler(self, response: str):
         heatings_dict = json.loads(response)
         for heating_dict in heatings_dict:
             heating = entity_factory.create_heating(heating_dict)
             self.discovered.add_heating(heating)
 
-    async def _application_response_handler(self, response: str, websocket):
+    async def _application_response_handler(self, response: str) -> ClientResponse:
         response_dict = json.loads(response)
         response_class = response_dict.get("class")
 
@@ -209,7 +229,7 @@ class IOLiteClient:
         elif response_class == ClassMap.KeepAliveRequest.value:
             logger.info("Handling KeepAliveRequest")
             request = self.request_handler.get_keepalive_request()
-            await self.__send_request(request, websocket)
+            return ClientResponse.create_continue(request)
         elif response_class == ClassMap.ModelEventResponse.value:
             logger.info("Handling ModelEventResponse")
         else:
@@ -219,19 +239,15 @@ class IOLiteClient:
             )
 
         request_id = response_dict.get("requestID")
-
         if not request_id:
-            return
+            return ClientResponse.create_continue()
 
-        response_request = self.request_handler.get_request(request_id)
-        if (
-            response_request
-            and response_request.request_options
-            and response_request.request_options.should_stop
-        ):
-            if self.stop_event:
-                logger.info("Stopping event loop")
-                self.stop_event.set()
+        self.request_handler.pop_request(request_id)
+        if not self.request_handler.has_requests():
+            logger.info("Handled all requests")
+            return ClientResponse.create_abort()
+
+        return ClientResponse.create_continue()
 
     def _handle_place_response(self, response_dict: dict):
         for value in response_dict["initialValues"]:
@@ -262,11 +278,9 @@ class IOLiteClient:
             )
 
     async def _async_discover(self):
-        self.stop_event = asyncio.Event()
-        loop = asyncio.get_event_loop()
-        loop.create_task(self._fetch())
-        await self.stop_event.wait()
+        await asyncio.create_task(self._fetch_application())
+        await asyncio.create_task(self._fetch_heating())
 
     def discover(self):
-        """Discovers the entities registered with the heating system."""
+        """Discovers the entities registered within the heating system."""
         asyncio.run(self._async_discover())
