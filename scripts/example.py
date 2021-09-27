@@ -39,6 +39,11 @@ client.discover()
 logger.info("Finished discovery")
 
 for room in client.discovered.get_rooms():
-    print(f"Room: {room.name} has {len(room.devices)}")
-    for device in room.devices:
-        print(f"- {device}")
+    print(f"{room.name} has {len(room.devices)} devices")
+    if room.heating:
+        print(
+            f"Current temp: {room.heating.current_temp}, target: {room.heating.target_temp}"
+        )
+
+    for device in room.devices.values():
+        print(f"- {device.name}")

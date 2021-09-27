@@ -146,6 +146,7 @@ class IOLiteClient:
         return headers
 
     async def _fetch_heating(self):
+        logger.info("Connecting to heating WS")
         uri = f"{self.BASE_URL}/heating/ws?SID={self.sid}"
         async with websockets.connect(
             uri, extra_headers=self._get_default_headers()
@@ -156,7 +157,11 @@ class IOLiteClient:
                     extra={"response": response},
                 )
 
-                await self._heating_response_handler(response)
+                response = await self._heating_response_handler(response)
+                if response.abort:
+                    break
+
+        logger.info("Finished heating WS")
 
     async def _devices_handler(self):
         logger.info("Connecting to devices WS")
@@ -201,15 +206,20 @@ class IOLiteClient:
                 response = await self._application_response_handler(response)
                 if response.abort:
                     logger.info("Aborting")
+                    break
 
                 if response.request:
                     await self.__send_request(request, websocket)
 
-    async def _heating_response_handler(self, response: str):
+            logger.info("Finished JSON WS")
+
+    async def _heating_response_handler(self, response: str) -> ClientResponse:
         heatings_dict = json.loads(response)
         for heating_dict in heatings_dict:
             heating = entity_factory.create_heating(heating_dict)
             self.discovered.add_heating(heating)
+
+        return ClientResponse.create_abort()
 
     async def _application_response_handler(self, response: str) -> ClientResponse:
         response_dict = json.loads(response)
