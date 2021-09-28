@@ -230,8 +230,10 @@ class IOLiteClient:
             return ClientResponse.create_continue(request)
         elif response_class == ClassMap.ModelEventResponse.value:
             logger.info("Handling ModelEventResponse")
+        elif response_class == ClassMap.ActionSuccess.value:
+            logger.info("Handling ActionSuccess")
         else:
-            logger.error(
+            logger.warning(
                 f"Unsupported response {response_dict}",
                 extra={"response_class": response_class},
             )
