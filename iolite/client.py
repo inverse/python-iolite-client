@@ -10,7 +10,7 @@ import websockets
 
 from iolite import entity_factory
 from iolite.entity import Device, Heating, Room
-from iolite.request_handler import ClassMap, RequestHandler, RequestOptions
+from iolite.request_handler import ClassMap, RequestHandler
 
 logger = logging.getLogger(__name__)
 
@@ -127,7 +127,6 @@ class IOLiteClient:
         self.sid = sid
         self.username = username
         self.password = password
-        self.stop_event: Optional[asyncio.Event] = None
 
     @staticmethod
     async def __send_request(request: Union[str, dict], websocket):
@@ -179,25 +178,14 @@ class IOLiteClient:
                 await asyncio.sleep(5)
                 await self.__send_request("keep_alive", websocket)
 
-    async def _fetch_application(self):
+    async def _fetch_application(self, requests: list):
         logger.info("Connecting to JSON WS")
         uri = f"{self.BASE_URL}/bus/websocket/application/json?SID={self.sid}"
         async with websockets.connect(
             uri, extra_headers=self._get_default_headers()
         ) as websocket:
-            # Get Rooms
-            request = self.request_handler.get_subscribe_request("places")
-            await self.__send_request(request, websocket)
-
-            # Get Devices
-            request = self.request_handler.get_subscribe_request("devices")
-            await self.__send_request(request, websocket)
-
-            # Get Profiles
-            request = self.request_handler.get_query_request(
-                "situationProfileModel", RequestOptions(should_stop=False)
-            )
-            await self.__send_request(request, websocket)
+            for request in requests:
+                await self.__send_request(request, websocket)
 
             async for response in websocket:
                 logger.debug(
@@ -288,9 +276,25 @@ class IOLiteClient:
             )
 
     async def _async_discover(self):
-        await asyncio.create_task(self._fetch_application())
+        requests = [
+            # Get Rooms
+            self.request_handler.get_subscribe_request("places"),
+            # Get Devices
+            self.request_handler.get_subscribe_request("devices"),
+            # Get Profiles
+            self.request_handler.get_query_request("situationProfileModel"),
+        ]
+
+        await asyncio.create_task(self._fetch_application(requests))
         await asyncio.create_task(self._fetch_heating())
 
     def discover(self):
         """Discovers the entities registered within the heating system."""
         asyncio.run(self._async_discover())
+
+    async def _async_set_temp(self, device, temp: float):
+        request = self.request_handler.get_action_request(device, temp)
+        await asyncio.create_task(self._fetch_application([request]))
+
+    def set_temp(self, device, temp: float):
+        asyncio.run(self._async_set_temp(device, temp))

@@ -1,4 +1,5 @@
 import logging
+import sys
 
 from environs import Env
 
@@ -47,3 +48,11 @@ for room in client.discovered.get_rooms():
 
     for device in room.devices.values():
         print(f"- {device.name}")
+
+bathroom = client.discovered.find_room_by_name("Bathroom")
+
+if not bathroom:
+    print("No discovered room called 'Bathroom'")
+    sys.exit(1)
+
+client.set_temp(next(iter(bathroom.devices.items()))[0], 30)

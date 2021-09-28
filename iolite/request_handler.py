@@ -66,9 +66,7 @@ class RequestHandler:
 
         return request
 
-    def get_query_request(
-        self, query: str, request_options: Optional[RequestOptions] = None
-    ) -> dict:
+    def get_query_request(self, query: str) -> dict:
         request = self._build_request(
             ClassMap.QueryRequest.value,
             {
@@ -76,7 +74,6 @@ class RequestHandler:
                 "class": ClassMap.QueryRequest.value,
                 "query": query,
             },
-            request_options,
         )
 
         return request
