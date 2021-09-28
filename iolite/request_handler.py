@@ -1,9 +1,7 @@
 import secrets
 import string
 import time
-from dataclasses import dataclass
 from enum import Enum
-from typing import Optional
 
 
 class ClassMap(Enum):
@@ -16,17 +14,6 @@ class ClassMap(Enum):
     ActionRequest = "ActionRequest"
     ActionSuccess = "ActionSuccess"
     ModelEventResponse = "ModelEventResponse"
-
-
-@dataclass
-class RequestOptions:
-    should_stop: bool
-
-
-@dataclass
-class Request:
-    request: dict
-    request_options: Optional[RequestOptions]
 
 
 class RequestHandler:
@@ -66,9 +53,7 @@ class RequestHandler:
 
         return request
 
-    def get_query_request(
-        self, query: str, request_options: Optional[RequestOptions] = None
-    ) -> dict:
+    def get_query_request(self, query: str) -> dict:
         request = self._build_request(
             ClassMap.QueryRequest.value,
             {
@@ -76,7 +61,6 @@ class RequestHandler:
                 "class": ClassMap.QueryRequest.value,
                 "query": query,
             },
-            request_options,
         )
 
         return request
@@ -90,20 +74,23 @@ class RequestHandler:
 
         return response
 
-    def get_request(self, request_id: str) -> Optional[Request]:
+    def get_request(self, request_id: str) -> dict:
         return self.request_stack.get(request_id)
+
+    def pop_request(self, request_id: str) -> dict:
+        return self.request_stack.pop(request_id)
+
+    def has_requests(self) -> bool:
+        return len(self.request_stack) != 0
 
     def _build_request(
         self,
         prefix: str,
         request: dict,
-        request_options: Optional[RequestOptions] = None,
     ) -> dict:
         request_id = self._get_request_id(prefix)
-
         request.update({"requestID": request_id})
-
-        self.request_stack[request_id] = Request(request, request_options)
+        self.request_stack[request_id] = request
 
         return request
 

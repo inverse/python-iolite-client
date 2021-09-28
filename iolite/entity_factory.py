@@ -1,6 +1,6 @@
 from typing import Optional
 
-from iolite.entity import Entity, Lamp, RadiatorValve, Room, Switch
+from iolite.entity import Entity, Heating, Lamp, RadiatorValve, Room, Switch
 
 
 def create(payload: dict) -> Optional[Entity]:
@@ -22,6 +22,15 @@ def create(payload: dict) -> Optional[Entity]:
         raise NotImplementedError(
             f"An unsupported entity type was returned {entity_class}"
         )
+
+
+def create_heating(payload: dict) -> Heating:
+    return Heating(
+        payload["id"],
+        payload["name"],
+        payload["currentTemperature"],
+        payload["targetTemperature"],
+    )
 
 
 def __create_device(identifier: str, type_name: str, payload: dict):

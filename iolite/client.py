@@ -3,13 +3,14 @@ import json
 import logging
 from base64 import b64encode
 from collections import defaultdict
-from typing import Dict, List, Optional
+from dataclasses import dataclass
+from typing import Dict, List, Optional, Union
 
 import websockets
 
 from iolite import entity_factory
-from iolite.entity import Device, Room
-from iolite.request_handler import ClassMap, RequestHandler, RequestOptions
+from iolite.entity import Device, Heating, Room
+from iolite.request_handler import ClassMap, RequestHandler
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +20,7 @@ class Discovered:
 
     def __init__(self):
         self.discovered_rooms: Dict[str, Room] = {}
-        self.unmapped_devices: defaultdict = defaultdict(list)
+        self.unmapped_entities: defaultdict = defaultdict(list)
 
     def add_room(self, room: Room):
         """
@@ -30,10 +31,13 @@ class Discovered:
         """
         self.discovered_rooms[room.identifier] = room
 
-        if room.identifier in self.unmapped_devices:
-            for device in self.unmapped_devices[room.identifier]:
-                room.add_device(device)
-            self.unmapped_devices.pop(room.identifier)
+        if room.identifier in self.unmapped_entities:
+            for entity in self.unmapped_entities[room.identifier]:
+                if isinstance(entity, Heating):
+                    room.add_heating(entity)
+                else:
+                    room.add_device(entity)
+            self.unmapped_entities.pop(room.identifier)
 
     def add_device(self, device: Device):
         """
@@ -47,7 +51,21 @@ class Discovered:
         if room:
             room.add_device(device)
         else:
-            self.unmapped_devices[device.place_identifier].append(device)
+            self.unmapped_entities[device.place_identifier].append(device)
+
+    def add_heating(self, heating: Heating):
+        """
+        Add heating.
+
+        :param heating: The heating to add
+        :return:
+        """
+        room = self.find_room_by_identifier(heating.identifier)
+
+        if room:
+            room.add_heating(heating)
+        else:
+            self.unmapped_entities[heating.identifier].append(heating)
 
     def find_room_by_identifier(self, identifier: str) -> Optional[Room]:
         """Finds a room by the given identifier.
@@ -84,6 +102,20 @@ class Discovered:
         return list(self.discovered_rooms.values())
 
 
+@dataclass
+class ClientResponse:
+    abort: bool
+    request: Optional[dict]
+
+    @staticmethod
+    def create_abort():
+        return ClientResponse(True, None)
+
+    @staticmethod
+    def create_continue(request: Optional[dict] = None):
+        return ClientResponse(False, request)
+
+
 class IOLiteClient:
     """The main client."""
 
@@ -95,11 +127,13 @@ class IOLiteClient:
         self.sid = sid
         self.username = username
         self.password = password
-        self.stop_event: Optional[asyncio.Event] = None
 
     @staticmethod
-    async def __send_request(request: dict, websocket):
-        encoded_request = json.dumps(request)
+    async def __send_request(request: Union[str, dict], websocket):
+        if isinstance(request, dict):
+            encoded_request = json.dumps(request)
+        else:
+            encoded_request = request
         await websocket.send(encoded_request)
         logger.debug("Request sent", extra={"request": encoded_request})
 
@@ -110,7 +144,8 @@ class IOLiteClient:
 
         return headers
 
-    async def _heating_handler(self):
+    async def _fetch_heating(self):
+        logger.info("Connecting to heating WS")
         uri = f"{self.BASE_URL}/heating/ws?SID={self.sid}"
         async with websockets.connect(
             uri, extra_headers=self._get_default_headers()
@@ -120,6 +155,12 @@ class IOLiteClient:
                     f"Response received (heating) {response}",
                     extra={"response": response},
                 )
+
+                response = await self._heating_response_handler(response)
+                if response.abort:
+                    break
+
+        logger.info("Finished heating WS")
 
     async def _devices_handler(self):
         logger.info("Connecting to devices WS")
@@ -133,33 +174,42 @@ class IOLiteClient:
                     extra={"response": response},
                 )
 
-    async def _fetch(self):
+            while True:
+                await asyncio.sleep(5)
+                await self.__send_request("keep_alive", websocket)
+
+    async def _fetch_application(self, requests: list):
         logger.info("Connecting to JSON WS")
         uri = f"{self.BASE_URL}/bus/websocket/application/json?SID={self.sid}"
         async with websockets.connect(
             uri, extra_headers=self._get_default_headers()
         ) as websocket:
-            # Get Rooms
-            request = self.request_handler.get_subscribe_request("places")
-            await self.__send_request(request, websocket)
-
-            # Get Devices
-            request = self.request_handler.get_subscribe_request("devices")
-            await self.__send_request(request, websocket)
-
-            # Get Profiles
-            request = self.request_handler.get_query_request(
-                "situationProfileModel", RequestOptions(should_stop=True)
-            )
-            await self.__send_request(request, websocket)
+            for request in requests:
+                await self.__send_request(request, websocket)
 
             async for response in websocket:
                 logger.debug(
                     f"Response received (JSON) {response}", extra={"response": response}
                 )
-                await self._fetch_response_handler(response, websocket)
+                response = await self._application_response_handler(response)
+                if response.abort:
+                    logger.info("Aborting")
+                    break
 
-    async def _fetch_response_handler(self, response: str, websocket):
+                if response.request:
+                    await self.__send_request(request, websocket)
+
+            logger.info("Finished JSON WS")
+
+    async def _heating_response_handler(self, response: str) -> ClientResponse:
+        heatings_dict = json.loads(response)
+        for heating_dict in heatings_dict:
+            heating = entity_factory.create_heating(heating_dict)
+            self.discovered.add_heating(heating)
+
+        return ClientResponse.create_abort()
+
+    async def _application_response_handler(self, response: str) -> ClientResponse:
         response_dict = json.loads(response)
         response_class = response_dict.get("class")
 
@@ -177,25 +227,27 @@ class IOLiteClient:
         elif response_class == ClassMap.KeepAliveRequest.value:
             logger.info("Handling KeepAliveRequest")
             request = self.request_handler.get_keepalive_request()
-            await self.__send_request(request, websocket)
+            return ClientResponse.create_continue(request)
         elif response_class == ClassMap.ModelEventResponse.value:
             logger.info("Handling ModelEventResponse")
-
+        elif response_class == ClassMap.ActionSuccess.value:
+            logger.info("Handling ActionSuccess")
         else:
-            logger.error(
+            logger.warning(
                 f"Unsupported response {response_dict}",
                 extra={"response_class": response_class},
             )
 
-        response_request = self.request_handler.get_request(response_dict["requestID"])
-        if (
-            response_request
-            and response_request.request_options
-            and response_request.request_options.should_stop
-        ):
-            if self.stop_event:
-                logger.info("Stopping event loop")
-                self.stop_event.set()
+        request_id = response_dict.get("requestID")
+        if not request_id:
+            return ClientResponse.create_continue()
+
+        self.request_handler.pop_request(request_id)
+        if not self.request_handler.has_requests():
+            logger.info("Handled all requests")
+            return ClientResponse.create_abort()
+
+        return ClientResponse.create_continue()
 
     def _handle_place_response(self, response_dict: dict):
         for value in response_dict["initialValues"]:
@@ -226,11 +278,25 @@ class IOLiteClient:
             )
 
     async def _async_discover(self):
-        self.stop_event = asyncio.Event()
-        loop = asyncio.get_event_loop()
-        loop.create_task(self._fetch())
-        await self.stop_event.wait()
+        requests = [
+            # Get Rooms
+            self.request_handler.get_subscribe_request("places"),
+            # Get Devices
+            self.request_handler.get_subscribe_request("devices"),
+            # Get Profiles
+            self.request_handler.get_query_request("situationProfileModel"),
+        ]
+
+        await asyncio.create_task(self._fetch_application(requests))
+        await asyncio.create_task(self._fetch_heating())
 
     def discover(self):
-        """Discovers the entities registered with the heating system."""
+        """Discovers the entities registered within the heating system."""
         asyncio.run(self._async_discover())
+
+    async def _async_set_temp(self, device, temp: float):
+        request = self.request_handler.get_action_request(device, temp)
+        await asyncio.create_task(self._fetch_application([request]))
+
+    def set_temp(self, device, temp: float):
+        asyncio.run(self._async_set_temp(device, temp))
