@@ -1,22 +1,33 @@
 import unittest
 
-from iolite.entity import Room, Switch
+from iolite.entity import Heating, Room, Switch
 
 
-class EntityTest(unittest.TestCase):
-    def test_add_device_to_room(self):
-        room = Room("placeIdentifier-1", "Bedroom")
-        switch = Switch("2", "Bedroom Switch", "placeIdentifier-1", "Generic")
-        room.add_device(switch)
-        self.assertEqual(1, len(room.devices))
-        self.assertEqual(switch, room.devices[switch.identifier])
+class RoomTest(unittest.TestCase):
+    def setUp(self) -> None:
+        self.bedroom = Room("placeIdentifier-1", "Bedroom")
+        self.bedroom_switch = Switch(
+            "2", "Bedroom Switch", self.bedroom.identifier, "Generic"
+        )
+        self.bedroom_heating = Heating(self.bedroom.identifier, "Bedroom", 20.0, 21.5)
+
+    def test_empty_room(self):
+        self.assertEqual(0, len(self.bedroom.devices))
+
+    def test_add_device(self):
+        self.bedroom.add_device(self.bedroom_switch)
+        self.assertEqual(1, len(self.bedroom.devices))
+        self.assertEqual(
+            self.bedroom_switch, self.bedroom.devices[self.bedroom_switch.identifier]
+        )
 
     def test_room_has_device(self):
-        room = Room("placeIdentifier-1", "Bedroom")
-        switch = Switch("2", "Bedroom Switch", "placeIdentifier-1", "Generic")
-        self.assertFalse(room.has_device(switch))
-        room.add_device(switch)
-        self.assertTrue(room.has_device(switch))
+        self.bedroom.add_device(self.bedroom_switch)
+        self.assertTrue(self.bedroom.has_device(self.bedroom_switch))
+
+    def test_add_heating(self):
+        self.bedroom.add_heating(self.bedroom_heating)
+        self.assertEqual(self.bedroom.heating, self.bedroom_heating)
 
 
 if __name__ == "__main__":
