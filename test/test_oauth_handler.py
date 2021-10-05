@@ -4,8 +4,9 @@ from unittest.mock import Mock
 
 import responses
 from freezegun import freeze_time
-from iolite.oauth_handler import OAuthHandler, OAuthWrapper
 from requests import HTTPError
+
+from iolite_client.oauth_handler import OAuthHandler, OAuthWrapper
 
 
 class OAuthHandlerTest(unittest.TestCase):

@@ -3,7 +3,8 @@ from enum import IntEnum
 from typing import Tuple
 
 import requests
-from iolite.exceptions import IOLiteError
+
+from iolite_client.exceptions import IOLiteError
 
 
 class Temperature:

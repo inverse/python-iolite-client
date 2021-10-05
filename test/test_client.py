@@ -1,7 +1,7 @@
 import unittest
 
-from iolite.client import Discovered
-from iolite.entity import Heating, Room, Switch
+from iolite_client.client import Discovered
+from iolite_client.entity import Heating, Room, Switch
 
 
 class DiscoveredTest(unittest.TestCase):
