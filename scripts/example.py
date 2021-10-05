@@ -3,7 +3,7 @@ import sys
 
 from environs import Env
 
-from iolite.client import IOLiteClient
+from iolite.client import Client
 from iolite.oauth_handler import OAuthHandler, OAuthStorage, OAuthWrapper
 
 env = Env()
@@ -31,7 +31,7 @@ print(f"Pass: {PASSWORD}")
 print("------------------")
 
 # Init client
-client = IOLiteClient(sid, USERNAME, PASSWORD)
+client = Client(sid, USERNAME, PASSWORD)
 
 logger.info("Connecting to client")
 
@@ -55,4 +55,4 @@ if not bathroom:
     print("No discovered room called 'Bathroom'")
     sys.exit(1)
 
-client.set_temp(next(iter(bathroom.devices.items()))[0], 30)
+client.set_temp(next(iter(bathroom.devices.items()))[0], 0)

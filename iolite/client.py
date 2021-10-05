@@ -116,7 +116,7 @@ class ClientResponse:
         return ClientResponse(False, request)
 
 
-class IOLiteClient:
+class Client:
     """The main client."""
 
     BASE_URL = "wss://remote.iolite.de"
