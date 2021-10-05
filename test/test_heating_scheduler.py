@@ -3,14 +3,13 @@ from base64 import b64encode
 from typing import Dict
 
 import responses
-from responses.matchers import json_params_matcher
-
 from iolite.heating_scheduler import (
     Day,
     HeatingScheduler,
     HeatingSchedulerError,
     Temperature,
 )
+from responses.matchers import json_params_matcher
 
 
 class TestClient(unittest.TestCase):

@@ -7,7 +7,6 @@ from dataclasses import dataclass
 from typing import Dict, List, Optional, Union
 
 import websockets
-
 from iolite import entity_factory
 from iolite.entity import Device, Heating, Room
 from iolite.request_handler import ClassMap, RequestHandler

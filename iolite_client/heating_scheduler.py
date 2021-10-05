@@ -3,7 +3,6 @@ from enum import IntEnum
 from typing import Tuple
 
 import requests
-
 from iolite.exceptions import IOLiteError
 
 
