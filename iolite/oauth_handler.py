@@ -120,7 +120,7 @@ class OAuthWrapper:
         self.oauth_handler = oauth_handler
         self.oauth_storage = oauth_storage
 
-    def get_sid(self, code: str, name: str):
+    def get_sid(self, code: str, name: str) -> str:
         """
         Get SID by providing the initial pairing code and the device name you would like to register.
 
