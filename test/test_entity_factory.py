@@ -1,8 +1,8 @@
 import unittest
 from typing import Dict
 
-from iolite import entity_factory
-from iolite.entity import RadiatorValve
+from iolite_client import entity_factory
+from iolite_client.entity import RadiatorValve
 
 EXAMPLE_HEATER: Dict = {
     "properties": [

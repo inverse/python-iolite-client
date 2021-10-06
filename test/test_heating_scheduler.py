@@ -5,7 +5,7 @@ from typing import Dict
 import responses
 from responses.matchers import json_params_matcher
 
-from iolite.heating_scheduler import (
+from iolite_client.heating_scheduler import (
     Day,
     HeatingScheduler,
     HeatingSchedulerError,

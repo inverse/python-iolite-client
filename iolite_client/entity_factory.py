@@ -1,6 +1,6 @@
 from typing import Optional
 
-from iolite.entity import Entity, Heating, Lamp, RadiatorValve, Room, Switch
+from iolite_client.entity import Entity, Heating, Lamp, RadiatorValve, Room, Switch
 
 
 def create(payload: dict) -> Optional[Entity]:

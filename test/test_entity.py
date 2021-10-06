@@ -1,6 +1,6 @@
 import unittest
 
-from iolite.entity import Heating, Room, Switch
+from iolite_client.entity import Heating, Room, Switch
 
 
 class RoomTest(unittest.TestCase):

@@ -1,6 +1,6 @@
 import unittest
 
-from iolite.request_handler import RequestHandler
+from iolite_client.request_handler import RequestHandler
 
 
 class RequestHandlerTest(unittest.TestCase):

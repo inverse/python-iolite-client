@@ -8,9 +8,9 @@ from typing import Dict, List, Optional, Union
 
 import websockets
 
-from iolite import entity_factory
-from iolite.entity import Device, Heating, Room
-from iolite.request_handler import ClassMap, RequestHandler
+from iolite_client import entity_factory
+from iolite_client.entity import Device, Heating, Room
+from iolite_client.request_handler import ClassMap, RequestHandler
 
 logger = logging.getLogger(__name__)
 
