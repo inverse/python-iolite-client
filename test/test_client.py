@@ -73,6 +73,27 @@ class DiscoveredTest(unittest.TestCase):
         self.assertTrue(len(self.discovered.unmapped_entities) == 0)
         self.assertEqual(self.bedroom_heating, self.discovered.get_rooms()[0].heating)
 
+    def test_find_device_by_identifier(self):
+        self.discovered.add_room(self.bedroom)
+        self.discovered.add_device(self.bedroom_switch)
+        self.assertEqual(
+            self.bedroom_switch,
+            self.discovered.find_device_by_identifier(self.bedroom_switch.identifier),
+        )
+
+    def test_find_device_by_identifier_unmapped(self):
+        self.discovered.add_device(self.bedroom_switch)
+        self.assertEqual(
+            self.bedroom_switch,
+            self.discovered.find_device_by_identifier(self.bedroom_switch.identifier),
+        )
+
+    def test_find_device_by_identifier_not_found(self):
+        self.assertEqual(
+            None,
+            self.discovered.find_device_by_identifier(self.bedroom_switch.identifier),
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

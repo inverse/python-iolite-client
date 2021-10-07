@@ -83,6 +83,22 @@ class Discovered:
         """
         return self._find_room_by_attribute_value("name", name)
 
+    def find_device_by_identifier(self, identifier: str) -> Optional[Device]:
+        """Find a device by identifier.
+        :param identifier: The identifier of the device
+        :return: The matched device or None
+        """
+        for room in self.discovered_rooms.values():
+            if room.devices.get(identifier):
+                return room.devices.get(identifier)
+
+        for devices in self.unmapped_entities.values():
+            for device in devices:
+                if device.identifier == identifier:
+                    return device
+
+        return None
+
     def _find_room_by_attribute_value(
         self, attribute: str, value: str
     ) -> Optional[Room]:
