@@ -277,7 +277,7 @@ class Client:
                 f"Adding {type(device).__name__} ({device.name}) to {room_name}"
             )
 
-    async def _async_discover(self):
+    async def async_discover(self):
         requests = [
             # Get Rooms
             self.request_handler.get_subscribe_request("places"),
@@ -292,11 +292,11 @@ class Client:
 
     def discover(self):
         """Discovers the entities registered within the heating system."""
-        asyncio.run(self._async_discover())
+        asyncio.run(self.async_discover())
 
-    async def _async_set_temp(self, device, temp: float):
+    async def async_set_temp(self, device, temp: float):
         request = self.request_handler.get_action_request(device, temp)
         await asyncio.create_task(self._fetch_application([request]))
 
     def set_temp(self, device, temp: float):
-        asyncio.run(self._async_set_temp(device, temp))
+        asyncio.run(self.async_set_temp(device, temp))
