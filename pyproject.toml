@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "iolite-client"
-version = "0.1.1"
+version = "0.2.0"
 description = "API client for interacting with IOLite's remote API"
 authors = ["Malachi Soord <me@malachisoord.com>"]
 license = "MIT"
