@@ -40,7 +40,7 @@ class RadiatorValve(Device):
         current_env_temp: float,
         battery_level: int,
         heating_mode: str,
-        valve_position: str,
+        valve_position: float,
     ):
         super().__init__(identifier, name, place_identifier, manufacturer)
         self.valve_position = valve_position
