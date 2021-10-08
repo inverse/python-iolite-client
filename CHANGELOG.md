@@ -9,19 +9,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Fix type on `valve_position` on `RadiatorValve`
+-   Fix type on `valve_position` on `RadiatorValve`
 
 ## 0.2.0 - 2021-10-07
 
 ### Added
 
-- Add `find_device_by_identifier` to discovered
+-   Add `find_device_by_identifier` to discovered
 
 ## 0.1.1 - 2021-10-07
 
 ### Changed
 
-- Make client async functions non-private
+-   Make client async functions non-private
 
 ## 0.1.0 - 2021-10-06
 
