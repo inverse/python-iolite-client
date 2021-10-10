@@ -35,7 +35,11 @@ opening the QR code in your browser, copy it's content. You'll get the following
 -   `basicAuth` contains base64 encoded HTTP basic username and password. Decode this to get the `:` separated `user:pass`.
 -   `code` is the pairing code
 
-You can decode the base64 encoded basicAuth information using the `scripts/get_credentials.py` script (see [development](#development) section).
+You can decode the credentials using the `scripts/get_credentials.py` script. e.g.
+
+```bash
+ python scripts/get_credentials.py '{"webApp":"/ui/","code":"<redacted>","basicAuth":"<redacted>"}'
+```
 
 ## Development
 
