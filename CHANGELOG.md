@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 -   Fix type on `valve_position` on `RadiatorValve`
 
+### Changed
+
+-   Changed `get_credentials.py` to handle whole payload
+
 ## 0.2.0 - 2021-10-07
 
 ### Added
