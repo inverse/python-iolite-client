@@ -9,11 +9,42 @@ import requests
 
 logger = logging.getLogger(__name__)
 
+BASE_URL = "https://remote.iolite.de"
+CLIENT_ID = "deuwo_mia_app"
+
+
+class OAuthHandlerHelper:
+    @staticmethod
+    def get_access_token_query(code: str, name: str) -> str:
+        return urlencode(
+            {
+                "client_id": CLIENT_ID,
+                "grant_type": "authorization_code",
+                "code": code,
+                "name": name,
+            }
+        )
+
+    @staticmethod
+    def get_new_access_token_query(refresh_token: str) -> str:
+        return urlencode(
+            {
+                "client_id": CLIENT_ID,
+                "grant_type": "refresh_token",
+                "refresh_token": refresh_token,
+            }
+        )
+
+    @staticmethod
+    def get_sid_query(access_token: str) -> str:
+        return urlencode(
+            {
+                "access_token": access_token,
+            }
+        )
+
 
 class OAuthHandler:
-    BASE_URL = "https://remote.iolite.de"
-    CLIENT_ID = "deuwo_mia_app"
-
     def __init__(self, username: str, password: str):
         self.username = username
         self.password = password
@@ -25,17 +56,9 @@ class OAuthHandler:
         :param name: The name of the device being paired
         :return:
         """
-        query = urlencode(
-            {
-                "client_id": self.CLIENT_ID,
-                "grant_type": "authorization_code",
-                "code": code,
-                "name": name,
-            }
-        )
-
+        query = OAuthHandlerHelper.get_access_token_query(code, name)
         response = requests.post(
-            f"{self.BASE_URL}/ui/token?{query}", auth=(self.username, self.password)
+            f"{BASE_URL}/ui/token?{query}", auth=(self.username, self.password)
         )
         response.raise_for_status()
         json_dict = json.loads(response.text)
@@ -47,16 +70,9 @@ class OAuthHandler:
         :param refresh_token: The refresh token
         :return: dict containing access token, and new refresh token
         """
-        query = urlencode(
-            {
-                "client_id": self.CLIENT_ID,
-                "grant_type": "refresh_token",
-                "refresh_token": refresh_token,
-            }
-        )
-
+        query = OAuthHandlerHelper.get_new_access_token_query(refresh_token)
         response = requests.post(
-            f"{self.BASE_URL}/ui/token?{query}", auth=(self.username, self.password)
+            f"{BASE_URL}/ui/token?{query}", auth=(self.username, self.password)
         )
         response.raise_for_status()
         json_dict = json.loads(response.text)
@@ -68,14 +84,59 @@ class OAuthHandler:
         :param access_token: Valid access token
         :return: SID
         """
-        query = urlencode(
-            {
-                "access_token": access_token,
-            }
-        )
-
+        query = OAuthHandlerHelper.get_sid_query(access_token)
         response = requests.get(
-            f"{self.BASE_URL}/ui/sid?{query}", auth=(self.username, self.password)
+            f"{BASE_URL}/ui/sid?{query}", auth=(self.username, self.password)
+        )
+        response.raise_for_status()
+        json_dict = json.loads(response.text)
+        return json_dict.get("SID")
+
+
+class AsyncOAuthHandler:
+    def __init__(self, username: str, password: str, web_session):
+        self.username = username
+        self.password = password
+        self.web_session = web_session
+
+    async def get_access_token(self, code: str, name: str) -> dict:
+        """
+        Get access token.
+        :param code: The pairing code
+        :param name: The name of the device being paired
+        :return:
+        """
+        query = OAuthHandlerHelper.get_access_token_query(code, name)
+        response = await self.web_session.post(
+            f"{BASE_URL}/ui/token?{query}", auth=(self.username, self.password)
+        )
+        response.raise_for_status()
+        json_dict = json.loads(response.text)
+        return json_dict
+
+    async def get_new_access_token(self, refresh_token: str) -> dict:
+        """
+        Get new access token
+        :param refresh_token: The refresh token
+        :return: dict containing access token, and new refresh token
+        """
+        query = OAuthHandlerHelper.get_new_access_token_query(refresh_token)
+        response = await self.web_session.post(
+            f"{BASE_URL}/ui/token?{query}", auth=(self.username, self.password)
+        )
+        response.raise_for_status()
+        json_dict = json.loads(response.text)
+        return json_dict
+
+    async def get_sid(self, access_token: str) -> str:
+        """
+        Get session ID.
+        :param access_token: Valid access token
+        :return: SID
+        """
+        query = OAuthHandlerHelper.get_sid_query(access_token)
+        response = await self.web_session.get(
+            f"{BASE_URL}/ui/sid?{query}", auth=(self.username, self.password)
         )
         response.raise_for_status()
         json_dict = json.loads(response.text)
