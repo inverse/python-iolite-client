@@ -25,6 +25,7 @@ responses = "*"
 pytest-socket = "*"
 freezegun = "*"
 single-source = "^0.2.0"
+aioresponses = "^0.7.2"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

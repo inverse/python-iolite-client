@@ -5,6 +5,7 @@ import time
 from typing import Optional
 from urllib.parse import urlencode
 
+import aiohttp
 import requests
 
 logger = logging.getLogger(__name__)
@@ -94,7 +95,9 @@ class OAuthHandler:
 
 
 class AsyncOAuthHandler:
-    def __init__(self, username: str, password: str, web_session):
+    def __init__(
+        self, username: str, password: str, web_session: aiohttp.ClientSession
+    ):
         self.username = username
         self.password = password
         self.web_session = web_session
@@ -111,8 +114,7 @@ class AsyncOAuthHandler:
             f"{BASE_URL}/ui/token?{query}", auth=(self.username, self.password)
         )
         response.raise_for_status()
-        json_dict = json.loads(response.text)
-        return json_dict
+        return await response.json()
 
     async def get_new_access_token(self, refresh_token: str) -> dict:
         """
@@ -125,8 +127,8 @@ class AsyncOAuthHandler:
             f"{BASE_URL}/ui/token?{query}", auth=(self.username, self.password)
         )
         response.raise_for_status()
-        json_dict = json.loads(response.text)
-        return json_dict
+        response.raise_for_status()
+        return await response.json()
 
     async def get_sid(self, access_token: str) -> str:
         """
@@ -139,8 +141,7 @@ class AsyncOAuthHandler:
             f"{BASE_URL}/ui/sid?{query}", auth=(self.username, self.password)
         )
         response.raise_for_status()
-        json_dict = json.loads(response.text)
-        return json_dict.get("SID")
+        return await response.json()
 
 
 class OAuthStorage:
