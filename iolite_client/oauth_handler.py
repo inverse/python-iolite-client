@@ -62,8 +62,7 @@ class OAuthHandler:
             f"{BASE_URL}/ui/token?{query}", auth=(self.username, self.password)
         )
         response.raise_for_status()
-        json_dict = json.loads(response.text)
-        return json_dict
+        return json.loads(response.text)
 
     def get_new_access_token(self, refresh_token: str) -> dict:
         """
@@ -76,8 +75,7 @@ class OAuthHandler:
             f"{BASE_URL}/ui/token?{query}", auth=(self.username, self.password)
         )
         response.raise_for_status()
-        json_dict = json.loads(response.text)
-        return json_dict
+        return json.loads(response.text)
 
     def get_sid(self, access_token: str) -> str:
         """
@@ -90,8 +88,7 @@ class OAuthHandler:
             f"{BASE_URL}/ui/sid?{query}", auth=(self.username, self.password)
         )
         response.raise_for_status()
-        json_dict = json.loads(response.text)
-        return json_dict.get("SID")
+        return json.loads(response.text).get("SID")
 
 
 class AsyncOAuthHandler:
@@ -111,7 +108,8 @@ class AsyncOAuthHandler:
         """
         query = OAuthHandlerHelper.get_access_token_query(code, name)
         response = await self.web_session.post(
-            f"{BASE_URL}/ui/token?{query}", auth=(self.username, self.password)
+            f"{BASE_URL}/ui/token?{query}",
+            auth=aiohttp.BasicAuth(self.username, self.password),
         )
         response.raise_for_status()
         return await response.json()
@@ -124,9 +122,9 @@ class AsyncOAuthHandler:
         """
         query = OAuthHandlerHelper.get_new_access_token_query(refresh_token)
         response = await self.web_session.post(
-            f"{BASE_URL}/ui/token?{query}", auth=(self.username, self.password)
+            f"{BASE_URL}/ui/token?{query}",
+            auth=aiohttp.BasicAuth(self.username, self.password),
         )
-        response.raise_for_status()
         response.raise_for_status()
         return await response.json()
 
@@ -138,10 +136,12 @@ class AsyncOAuthHandler:
         """
         query = OAuthHandlerHelper.get_sid_query(access_token)
         response = await self.web_session.get(
-            f"{BASE_URL}/ui/sid?{query}", auth=(self.username, self.password)
+            f"{BASE_URL}/ui/sid?{query}",
+            auth=aiohttp.BasicAuth(self.username, self.password),
         )
         response.raise_for_status()
-        return await response.json()
+        response_json = await response.json()
+        return response_json.get("SID")
 
 
 class OAuthStorage:
