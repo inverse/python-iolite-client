@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "iolite-client"
-version = "0.3.0"
+version = "0.3.1"
 description = "API client for interacting with IOLite's remote API"
 authors = ["Malachi Soord <me@malachisoord.com>"]
 license = "MIT"
@@ -14,6 +14,7 @@ python = "^3.7"
 websockets = "*"
 requests = "*"
 aiohttp = "^3.7.4"
+single-source = "^0.2.0"
 environs = {version = "^9.3.4", optional = true}
 
 [tool.poetry.dev-dependencies]
@@ -24,7 +25,6 @@ pytest-cov = "*"
 responses = "*"
 pytest-socket = "*"
 freezegun = "*"
-single-source = "^0.2.0"
 aioresponses = "^0.7.2"
 
 [tool.poetry.extras]
