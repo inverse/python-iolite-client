@@ -4,6 +4,7 @@ import sys
 from environs import Env
 
 from iolite_client.client import Client
+from iolite_client.entity import RadiatorValve
 from iolite_client.oauth_handler import OAuthHandler, OAuthStorage, OAuthWrapper
 
 env = Env()
@@ -48,6 +49,9 @@ for room in client.discovered.get_rooms():
 
     for device in room.devices.values():
         print(f"- {device.name}")
+        if isinstance(device, RadiatorValve):
+            print(f"  - current: {device.current_env_temp}")
+            print(f"  - mode: {device.heating_mode}")
 
 bathroom = client.discovered.find_room_by_name("Bathroom")
 

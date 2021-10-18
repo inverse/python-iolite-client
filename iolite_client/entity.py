@@ -1,5 +1,5 @@
 from abc import ABC
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 
 
 class Entity(ABC):
@@ -20,6 +20,10 @@ class Device(PlaceEntity):
     ):
         super().__init__(identifier, name, place_identifier)
         self.manufacturer = manufacturer
+
+    @classmethod
+    def get_type(cls) -> str:
+        return cls.__name__.lower()
 
 
 class Switch(Device):
@@ -81,3 +85,10 @@ class Room(Entity):
                 f"Trying to add heating to wrong room {heating.identifier} != {self.identifier}"
             )
         self.heating = heating
+
+    def get_devices_by_type(self, device_type: str) -> List[Device]:
+        return [
+            device
+            for device in self.devices.values()
+            if device.get_type() == device_type
+        ]
