@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Added
+
+-   Added `get_devices_by_type` to `Room` entity
+-   Add way to get entity type easily
+
+### Changed
+
+-   Changed `get_credentials.py` to handle whole payload
+
+## 0.3.1 - 2021-10-15
+
+### Fixed
+
+-   Fix dependency bug
+
+## 0.3.0 - 2021-10-13
+
+### Added
+
+-   Add `AsyncOAuthHandler`
+
 ### Fixed
 
 -   Fix type on `valve_position` on `RadiatorValve`

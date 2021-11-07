@@ -58,6 +58,14 @@ class RoomTest(unittest.TestCase):
         self.bedroom.add_heating(self.bedroom_heating)
         self.assertEqual(self.bedroom.heating, self.bedroom_heating)
 
+    def test_get_devices_by_type(self):
+        self.bedroom.add_device(self.bedroom_switch)
+        self.bedroom.add_device(self.bedroom_radiator_valve)
+        self.assertEqual(
+            [self.bedroom_radiator_valve],
+            self.bedroom.get_devices_by_type(RadiatorValve.get_type()),
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

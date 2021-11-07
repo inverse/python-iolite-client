@@ -60,6 +60,8 @@ Run `poetry run python scripts/example.py` and copy the URL to your browser of c
 
 You will need the HTTP basic credentials you defined earlier within the `.env` file.
 
+Be sure to run `poetry install -E dev` to get the required dependencies for this.
+
 ## Usage example
 
 A jupyter notebook showcasing the heating interval scheduler can be found in `notebooks/Heating Scheduler.ipynb`. To

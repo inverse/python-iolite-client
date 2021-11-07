@@ -56,7 +56,7 @@ jobs:
     - name: Install pip dependencies
       run: poetry install
     - name: Test
-      run: poetry run pytest --cov-report xml --cov=iolite test/
+      run: poetry run pytest --cov-report xml --cov=iolite_client test/
     - name: Upload coverage
       if: ${{ matrix.python-version == 3.9 && env.IS_COVERAGE_ALLOWED == 'true' }}
       uses: codecov/codecov-action@v2
