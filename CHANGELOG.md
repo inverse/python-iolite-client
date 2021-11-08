@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 -   Added `get_devices_by_type` to `Room` entity
 -   Add way to get entity type easily
+-   Improve entity creation and visibility for unsupported entities
 
 ## 0.3.1 - 2021-10-15
 

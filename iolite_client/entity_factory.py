@@ -1,27 +1,41 @@
-from typing import Optional
+from iolite_client.entity import Device, Heating, Lamp, RadiatorValve, Room, Switch
+from iolite_client.exceptions import UnsupportedDeviceError
 
-from iolite_client.entity import Entity, Heating, Lamp, RadiatorValve, Room, Switch
 
-
-def create(payload: dict) -> Optional[Entity]:
-    """Create entity from given payload."""
+def create_room(payload: dict) -> Room:
     entity_class = payload.get("class")
     identifier = payload.get("id")
 
     if not entity_class:
-        raise Exception("Payload missing class")
+        raise ValueError("Payload missing class")
 
     if not identifier:
-        raise Exception("Payload missing id")
+        raise ValueError("Payload missing id")
 
-    if entity_class == "Room":
-        return Room(identifier, payload["placeName"])
-    elif entity_class == "Device":
-        return __create_device(identifier, payload["typeName"], payload)
-    else:
+    if entity_class != "Room":
         raise NotImplementedError(
-            f"An unsupported entity type was returned {entity_class}"
+            f"An unsupported entity class was provided when trying to create a room - {entity_class}"
         )
+
+    return Room(identifier, payload["placeName"])
+
+
+def create_device(payload: dict) -> Device:
+    entity_class = payload.get("class")
+    identifier = payload.get("id")
+
+    if not entity_class:
+        raise ValueError("Payload missing class")
+
+    if not identifier:
+        raise ValueError("Payload missing id")
+
+    if entity_class != "Device":
+        raise NotImplementedError(
+            f"An unsupported entity class was provided when trying to create a device - {entity_class}"
+        )
+
+    return _create_device(identifier, payload["typeName"], payload)
 
 
 def create_heating(payload: dict) -> Heating:
@@ -33,10 +47,8 @@ def create_heating(payload: dict) -> Heating:
     )
 
 
-def __create_device(identifier: str, type_name: str, payload: dict):
-
+def _create_device(identifier: str, type_name: str, payload: dict):
     place_identifier = payload["placeIdentifier"]
-
     if type_name == "Lamp":
         return Lamp(
             identifier,
@@ -44,30 +56,27 @@ def __create_device(identifier: str, type_name: str, payload: dict):
             place_identifier,
             payload["manufacturer"],
         )
-
-    if type_name == "TwoChannelRockerSwitch":
+    elif type_name == "TwoChannelRockerSwitch":
         return Switch(
             identifier,
             payload["friendlyName"],
             place_identifier,
             payload["manufacturer"],
         )
-
-    if type_name == "Lamp":
+    elif type_name == "Lamp":
         return Lamp(
             identifier,
             payload["friendlyName"],
             place_identifier,
             payload["manufacturer"],
         )
-
-    if type_name == "Heater":
+    elif type_name == "Heater":
         properties = payload["properties"]
 
-        current_env_temp = __get_prop(properties, "currentEnvironmentTemperature")
-        battery_level = __get_prop(properties, "batteryLevel")
-        heating_mode = __get_prop(properties, "heatingMode")
-        valve_position = __get_prop(properties, "valvePosition")
+        current_env_temp = _get_prop(properties, "currentEnvironmentTemperature")
+        battery_level = _get_prop(properties, "batteryLevel")
+        heating_mode = _get_prop(properties, "heatingMode")
+        valve_position = _get_prop(properties, "valvePosition")
 
         return RadiatorValve(
             identifier,
@@ -79,9 +88,11 @@ def __create_device(identifier: str, type_name: str, payload: dict):
             heating_mode,
             valve_position,
         )
+    else:
+        raise UnsupportedDeviceError(type_name, identifier, payload)
 
 
-def __get_prop(properties: list, key: str):
+def _get_prop(properties: list, key: str):
     """
     Get a property from list of properties.
 

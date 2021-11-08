@@ -3,6 +3,7 @@ from typing import Dict
 
 from iolite_client import entity_factory
 from iolite_client.entity import RadiatorValve
+from iolite_client.exceptions import UnsupportedDeviceError
 
 EXAMPLE_HEATER: Dict = {
     "properties": [
@@ -342,13 +343,74 @@ EXAMPLE_HEATER: Dict = {
 
 class EntityTest(unittest.TestCase):
     def test_create_heater(self):
-        heater = entity_factory.create(EXAMPLE_HEATER)
+        heater = entity_factory.create_device(EXAMPLE_HEATER)
         self.assertIsInstance(heater, RadiatorValve)
         self.assertEqual("id-1", heater.identifier)
         self.assertEqual("Stellantrieb_0", heater.name)
         self.assertEqual(100, heater.battery_level)
         self.assertEqual(0, heater.valve_position)
         self.assertEqual(19, heater.current_env_temp)
+
+    def test_create_device_unsupported_device(self):
+        with self.assertRaises(UnsupportedDeviceError):
+            entity_factory.create_device(
+                {
+                    "class": "Device",
+                    "id": "yolo",
+                    "placeIdentifier": "kitchen",
+                    "typeName": "DeathStar",
+                }
+            )
+
+    def test_create_device_unsupported_device_class(self):
+        with self.assertRaises(NotImplementedError):
+            entity_factory.create_device(
+                {
+                    "class": "DeathStar",
+                    "id": "yolo",
+                }
+            )
+
+    def test_create_device_missing_class(self):
+        with self.assertRaises(ValueError):
+            entity_factory.create_device(
+                {
+                    "id": "yolo",
+                }
+            )
+
+    def test_create_device_missing_id(self):
+        with self.assertRaises(ValueError):
+            entity_factory.create_device(
+                {
+                    "class": "DeathStar",
+                }
+            )
+
+    def test_create_room_unsupported_device_class(self):
+        with self.assertRaises(NotImplementedError):
+            entity_factory.create_device(
+                {
+                    "class": "DeathStar",
+                    "id": "yolo",
+                }
+            )
+
+    def test_create_room_missing_class(self):
+        with self.assertRaises(ValueError):
+            entity_factory.create_device(
+                {
+                    "id": "yolo",
+                }
+            )
+
+    def test_create_room_missing_id(self):
+        with self.assertRaises(ValueError):
+            entity_factory.create_device(
+                {
+                    "class": "DeathStar",
+                }
+            )
 
 
 if __name__ == "__main__":

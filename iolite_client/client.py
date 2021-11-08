@@ -10,6 +10,7 @@ import websockets
 
 from iolite_client import entity_factory
 from iolite_client.entity import Device, Heating, Room
+from iolite_client.exceptions import UnsupportedDeviceError
 from iolite_client.request_handler import ClassMap, RequestHandler
 
 logger = logging.getLogger(__name__)
@@ -267,23 +268,16 @@ class Client:
 
     def _handle_place_response(self, response_dict: dict):
         for value in response_dict["initialValues"]:
-            room = entity_factory.create(value)
-            if not isinstance(room, Room):
-                logger.warning(
-                    f"Entity factory created unsupported class ({type(room).__name__})"
-                )
-                continue
-
+            room = entity_factory.create_room(value)
             self.discovered.add_room(room)
             logger.info(f"Setting up {room.name} ({room.identifier})")
 
     def _handle_device_response(self, response_dict: dict):
         for value in response_dict["initialValues"]:
-            device = entity_factory.create(value)
-            if not isinstance(device, Device):
-                logger.warning(
-                    f"Entity factory created unsupported class ({type(device).__name__})"
-                )
+            try:
+                device = entity_factory.create_device(value)
+            except UnsupportedDeviceError as e:
+                logger.warning(f"Unsupported device identified - {e.type_name}")
                 continue
 
             self.discovered.add_device(device)
