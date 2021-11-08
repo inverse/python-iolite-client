@@ -14,7 +14,7 @@ def create_room(payload: dict) -> Room:
 
     if entity_class != "Room":
         raise NotImplementedError(
-            f"An unsupported entity type was returned {entity_class}"
+            f"An unsupported entity class was provided when trying to create a room - {entity_class}"
         )
 
     return Room(identifier, payload["placeName"])
@@ -32,7 +32,7 @@ def create_device(payload: dict) -> Device:
 
     if entity_class != "Device":
         raise NotImplementedError(
-            f"An unsupported entity type was returned {entity_class}"
+            f"An unsupported entity class was provided when trying to create a device - {entity_class}"
         )
 
     return _create_device(identifier, payload["typeName"], payload)
