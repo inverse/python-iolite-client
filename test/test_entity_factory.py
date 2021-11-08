@@ -342,13 +342,38 @@ EXAMPLE_HEATER: Dict = {
 
 class EntityTest(unittest.TestCase):
     def test_create_heater(self):
-        heater = entity_factory.create(EXAMPLE_HEATER)
+        heater = entity_factory.create_device(EXAMPLE_HEATER)
         self.assertIsInstance(heater, RadiatorValve)
         self.assertEqual("id-1", heater.identifier)
         self.assertEqual("Stellantrieb_0", heater.name)
         self.assertEqual(100, heater.battery_level)
         self.assertEqual(0, heater.valve_position)
         self.assertEqual(19, heater.current_env_temp)
+
+    def test_create_unsupported_device(self):
+        with self.assertRaises(NotImplementedError):
+            entity_factory.create_device(
+                {
+                    "class": "DeathStar",
+                    "id": "yolo",
+                }
+            )
+
+    def test_create_missing_class(self):
+        with self.assertRaises(ValueError):
+            entity_factory.create_device(
+                {
+                    "id": "yolo",
+                }
+            )
+
+    def test_create_missing_id(self):
+        with self.assertRaises(ValueError):
+            entity_factory.create_device(
+                {
+                    "class": "DeathStar",
+                }
+            )
 
 
 if __name__ == "__main__":
