@@ -390,7 +390,7 @@ testing = ["fields", "hunter", "process-tests", "six", "pytest-xdist", "virtuale
 
 [[package]]
 name = "pytest-socket"
-version = "0.5.0"
+version = "0.5.1"
 description = "Pytest Plugin to disable socket calls during tests"
 category = "dev"
 optional = false
@@ -969,8 +969,8 @@ pytest-cov = [
     {file = "pytest_cov-3.0.0-py3-none-any.whl", hash = "sha256:578d5d15ac4a25e5f961c938b85a05b09fdaae9deef3bb6de9a6e766622ca7a6"},
 ]
 pytest-socket = [
-    {file = "pytest-socket-0.5.0.tar.gz", hash = "sha256:1a3b92c4889118c688610a8d2991b51e2893e1e519db9e4226261ce5e24f70e2"},
-    {file = "pytest_socket-0.5.0-py3-none-any.whl", hash = "sha256:fc2bfe4020255431dd9583dd657aa8b75c4f9e0c53c46566cf06ce40fe9ea0ce"},
+    {file = "pytest-socket-0.5.1.tar.gz", hash = "sha256:7c4b81dc6a51cbc0093f11791de00ff4a15ac698f5da96879a80f5d9ad4179b6"},
+    {file = "pytest_socket-0.5.1-py3-none-any.whl", hash = "sha256:8726fd47b83b127451532b6d570c5b6c4cd204fca363936509b1f53195de6f4f"},
 ]
 python-dateutil = [
     {file = "python-dateutil-2.8.2.tar.gz", hash = "sha256:0123cacc1627ae19ddf3c27a5de5bd67ee4586fbdd6440d9748f8abb483d3e86"},
