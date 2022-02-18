@@ -151,3 +151,28 @@ class OAuthWrapperTest(unittest.TestCase):
         )
         self.mock_oauth_storage.store_access_token.assert_called_once_with(response)
         self.mock_oauth_handler.get_sid.assert_called_once_with("access-token")
+
+    @freeze_time("2021-01-01 00:00:00")
+    def test_invalid_token_refresh(self):
+        self.mock_oauth_storage.fetch_access_token.return_value = {
+            "expires_at": datetime.datetime(2021, 1, 1, 0, 0, 1).timestamp(),
+            "access_token": "access-token",
+            "refresh_token": "refresh-token",
+        }
+
+        self.mock_oauth_handler.get_sid.side_effect = [
+            HTTPError("Something went wrong"),
+            "sid",
+        ]
+
+        response = {
+            "expires_at": datetime.datetime(2021, 1, 10, 0, 0, 0).timestamp(),
+            "access_token": "access-token",
+        }
+
+        self.mock_oauth_handler.get_new_access_token.return_value = response
+
+        oauth_wrapper = OAuthWrapper(self.mock_oauth_handler, self.mock_oauth_storage)
+        oauth_wrapper.get_sid("my-code", "my-device")
+
+        self.assertEqual(self.mock_oauth_handler.get_sid.call_count, 2)

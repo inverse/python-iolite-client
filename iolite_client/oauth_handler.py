@@ -201,12 +201,20 @@ class OAuthWrapper:
 
         if expires_at < time.time():
             logger.debug("Token expired, refreshing")
-            refreshed_token = self.oauth_handler.get_new_access_token(
-                access_token["refresh_token"]
-            )
-            self.oauth_storage.store_access_token(refreshed_token)
-            token = refreshed_token["access_token"]
+            token = self._refresh_access_token(access_token)
         else:
             token = access_token["access_token"]
 
-        return self.oauth_handler.get_sid(token)
+        try:
+            return self.oauth_handler.get_sid(token)
+        except requests.exceptions.HTTPError as e:
+            logger.debug(f"Invalid token, attempt refresh: {e}")
+            token = self._refresh_access_token(access_token)
+            return self.oauth_handler.get_sid(token)
+
+    def _refresh_access_token(self, access_token):
+        refreshed_token = self.oauth_handler.get_new_access_token(
+            access_token["refresh_token"]
+        )
+        self.oauth_storage.store_access_token(refreshed_token)
+        return refreshed_token["access_token"]
