@@ -3,15 +3,17 @@
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html) after the 1.0.0 release.
 
-## Unreleased
+## 0.4.0 - 2022-02-19
 
 ### Added
 
--   Added `get_devices_by_type` to `Room` entity
--   Add way to get entity type easily
--   Improve entity creation and visibility for unsupported entities
+-   Added `get_devices_by_type` to `Room` entity (#102)
+-   Add way to get entity type easily  (#102)
+-   Improve entity creation and visibility for unsupported entities (#107)
+-   Improve token refresh (#131)
+-   Improve OAuth layer (#133)
 
 ## 0.3.1 - 2021-10-15
 
