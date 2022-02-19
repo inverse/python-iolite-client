@@ -5,7 +5,7 @@ from environs import Env
 
 from iolite_client.client import Client
 from iolite_client.entity import RadiatorValve
-from iolite_client.oauth_handler import OAuthHandler, OAuthStorage, OAuthWrapper
+from iolite_client.oauth_handler import LocalOAuthStorage, OAuthHandler, OAuthWrapper
 
 env = Env()
 env.read_env()
@@ -20,7 +20,7 @@ logging.basicConfig(level=logging.getLevelName(LOG_LEVEL))
 logger = logging.getLogger(__name__)
 
 # Get SID
-oauth_storage = OAuthStorage(".")
+oauth_storage = LocalOAuthStorage(".")
 oauth_handler = OAuthHandler(USERNAME, PASSWORD)
 oauth_wrapper = OAuthWrapper(oauth_handler, oauth_storage)
 sid = oauth_wrapper.get_sid(CODE, NAME)
