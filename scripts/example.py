@@ -23,7 +23,13 @@ logger = logging.getLogger(__name__)
 oauth_storage = LocalOAuthStorage(".")
 oauth_handler = OAuthHandler(USERNAME, PASSWORD)
 oauth_wrapper = OAuthWrapper(oauth_handler, oauth_storage)
-sid = oauth_wrapper.get_sid(CODE, NAME)
+
+access_token = oauth_storage.fetch_access_token()
+if not access_token:
+    access_token = oauth_handler.get_access_token(CODE, NAME)
+    oauth_storage.store_access_token(access_token)
+
+sid = oauth_wrapper.get_sid(access_token)
 
 print("------------------")
 print(f"URL: https://remote.iolite.de/ui/?SID={sid}")
