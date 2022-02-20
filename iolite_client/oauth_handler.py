@@ -44,6 +44,13 @@ class OAuthHandlerHelper:
             }
         )
 
+    @staticmethod
+    def add_expires_at(token: dict) -> dict:
+        expires_at = time.time() + token["expires_in"]
+        token.update({"expires_at": expires_at})
+        del token["expires_in"]
+        return token
+
 
 class OAuthHandler:
     def __init__(self, username: str, password: str):
@@ -62,7 +69,7 @@ class OAuthHandler:
             f"{BASE_URL}/ui/token?{query}", auth=(self.username, self.password)
         )
         response.raise_for_status()
-        return json.loads(response.text)
+        return OAuthHandlerHelper.add_expires_at(json.loads(response.text))
 
     def get_new_access_token(self, refresh_token: str) -> dict:
         """
@@ -75,7 +82,7 @@ class OAuthHandler:
             f"{BASE_URL}/ui/token?{query}", auth=(self.username, self.password)
         )
         response.raise_for_status()
-        return json.loads(response.text)
+        return OAuthHandlerHelper.add_expires_at(json.loads(response.text))
 
     def get_sid(self, access_token: str) -> str:
         """
@@ -112,7 +119,7 @@ class AsyncOAuthHandler:
             auth=aiohttp.BasicAuth(self.username, self.password),
         )
         response.raise_for_status()
-        return await response.json()
+        return OAuthHandlerHelper.add_expires_at(await response.json())
 
     async def get_new_access_token(self, refresh_token: str) -> dict:
         """
@@ -126,7 +133,7 @@ class AsyncOAuthHandler:
             auth=aiohttp.BasicAuth(self.username, self.password),
         )
         response.raise_for_status()
-        return await response.json()
+        return OAuthHandlerHelper.add_expires_at(await response.json())
 
     async def get_sid(self, access_token: str) -> str:
         """
@@ -165,8 +172,6 @@ class LocalOAuthStorage(OAuthStorageInterface):
         self.path = path
 
     def store_access_token(self, payload: dict):
-        expires_at = time.time() + payload["expires_in"]
-        payload.update({"expires_at": expires_at})
         self.__store("access_token", payload)
 
     def fetch_access_token(self) -> Optional[dict]:
@@ -200,39 +205,29 @@ class OAuthWrapper:
         self.oauth_handler = oauth_handler
         self.oauth_storage = oauth_storage
 
-    def get_sid(self, code: str, name: str) -> str:
+    def get_sid(self, token: dict) -> str:
         """
-        Get SID by providing the initial pairing code and the device name you would like to register.
+        Get SID by access_token.
 
-        :param code: The code provided in the QR code
-        :param name: The name of the device you want to register
+        :param token: The access token
         :return:
         """
-        access_token = self.oauth_storage.fetch_access_token()
-
-        if access_token is None:
-            logger.debug("No token, requesting")
-            access_token = self.oauth_handler.get_access_token(code, name)
-            self.oauth_storage.store_access_token(access_token)
-
-        expires_at = access_token["expires_at"]
-
-        if expires_at < time.time():
+        if token["expires_at"] < time.time():
             logger.debug("Token expired, refreshing")
-            token = self._refresh_access_token(access_token)
+            access_token = self._refresh_access_token(token)
         else:
-            token = access_token["access_token"]
+            access_token = token["access_token"]
 
         try:
-            return self.oauth_handler.get_sid(token)
+            return self.oauth_handler.get_sid(access_token)
         except requests.exceptions.HTTPError as e:
             logger.debug(f"Invalid token, attempt refresh: {e}")
-            token = self._refresh_access_token(access_token)
-            return self.oauth_handler.get_sid(token)
+            access_token = self._refresh_access_token(token)
+            return self.oauth_handler.get_sid(access_token)
 
-    def _refresh_access_token(self, access_token):
+    def _refresh_access_token(self, token: dict) -> str:
         refreshed_token = self.oauth_handler.get_new_access_token(
-            access_token["refresh_token"]
+            token["refresh_token"]
         )
         self.oauth_storage.store_access_token(refreshed_token)
         return refreshed_token["access_token"]
@@ -247,37 +242,33 @@ class AsyncOAuthWrapper:
         self.oauth_handler = oauth_handler
         self.oauth_storage = oauth_storage
 
-    async def get_sid(self, code: str, name: str) -> str:
-        access_token = await self.oauth_storage.fetch_access_token()
+    async def get_sid(self, token: dict) -> str:
+        """
+        Get SID by token.
 
-        if access_token is None:
-            logger.debug("No token, requesting")
-            access_token = await self.oauth_handler.get_access_token(code, name)
-            await self.oauth_storage.store_access_token(access_token)
-
-        if access_token["expires_at"] < time.time():
+        :param token: The token
+        :return:
+        """
+        if token["expires_at"] < time.time():
             logger.debug("Token expired, refreshing")
-            token = await self._refresh_token(access_token)
+            access_token = await self._refresh_token(token)
         else:
-            token = access_token["access_token"]
+            access_token = token["access_token"]
 
         logger.debug("Fetched access token")
 
         try:
-            return await self.oauth_handler.get_sid(token)
+            return await self.oauth_handler.get_sid(access_token)
         except BaseException as e:
             logger.debug(f"Invalid token, attempt refresh: {e}")
-            token = await self._refresh_token(access_token)
-            return await self.oauth_handler.get_sid(token)
+            access_token = await self._refresh_token(token)
+            return await self.oauth_handler.get_sid(access_token)
 
-    async def _refresh_token(self, access_token: dict) -> str:
+    async def _refresh_token(self, token: dict) -> str:
         """Refresh token."""
         refreshed_token = await self.oauth_handler.get_new_access_token(
-            access_token["refresh_token"]
+            token["refresh_token"]
         )
-        expires_at = time.time() + refreshed_token["expires_in"]
-        refreshed_token.update({"expires_at": expires_at})
-        del refreshed_token["expires_in"]
         await self.oauth_storage.store_access_token(refreshed_token)
 
         return refreshed_token["access_token"]
