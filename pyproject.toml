@@ -14,7 +14,7 @@ python = "^3.7"
 websockets = "*"
 requests = "*"
 aiohttp = "^3.7.4"
-single-source = "^0.2.0"
+single-source = ">=0.2,<0.4"
 environs = {version = "^9.3.4", optional = true}
 
 [tool.poetry.dev-dependencies]
