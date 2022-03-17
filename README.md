@@ -4,6 +4,10 @@
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/a38c5dbfc12247c893b4f39db4fac2b2)](https://www.codacy.com/manual/inverse/python-iolite-client?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=inverse/python-iolite-client&amp;utm_campaign=Badge_Grade)
 [![codecov](https://codecov.io/gh/inverse/python-iolite-client/branch/master/graph/badge.svg?token=26LC98A22C)](https://codecov.io/gh/inverse/python-iolite-client)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![PyPI version](https://badge.fury.io/py/iolite-client.svg)](https://badge.fury.io/py/decode-config)
+![PyPI downloads](https://img.shields.io/pypi/dm/iolite-client?label=pypi%20downloads)
+[![License](https://img.shields.io/github/license/inverse/python-iolite-client.svg)](LICENSE)
+
 
 WIP Python client for [IOLite's][0] remote API.
 
