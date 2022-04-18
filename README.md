@@ -9,14 +9,16 @@
 [![License](https://img.shields.io/github/license/inverse/python-iolite-client.svg)](LICENSE)
 
 
-WIP Python client for [IOLite's][0] remote API.
+Python client for [IOLite's][0] remote API.
 
-The client is still incomplete, but the authentication layer, some basic command models, and a client to change the
+The client has basic functionality such as the authentication layer, some basic command models, and a client to change the
 heating intervals are available.
 
 Build by reverse engineering the [Deutsche Wohnen][2] [MIA Android App][1] and subsequently their remote API.
 
 Read the following [short post][3] on how that was achieved.
+
+Used in making the [IOLite Custom Component](https://github.com/inverse/home-assistant-iolite-component) for Home Assistant.
 
 ## Requirements
 
