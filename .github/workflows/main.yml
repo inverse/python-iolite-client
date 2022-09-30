@@ -59,6 +59,6 @@ jobs:
       run: poetry run pytest --cov-report xml --cov=iolite_client test/
     - name: Upload coverage
       if: ${{ matrix.python-version == 3.9 && env.IS_COVERAGE_ALLOWED == 'true' }}
-      uses: codecov/codecov-action@v2
+      uses: codecov/codecov-action@v3
       with:
         files: coverage.xml
