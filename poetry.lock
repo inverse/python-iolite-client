@@ -354,7 +354,7 @@ testing = ["argcomplete", "hypothesis (>=3.56)", "mock", "nose", "pygments (>=2.
 
 [[package]]
 name = "pytest-asyncio"
-version = "0.19.0"
+version = "0.20.3"
 description = "Pytest support for asyncio"
 category = "dev"
 optional = false
@@ -365,6 +365,7 @@ pytest = ">=6.1.0"
 typing-extensions = {version = ">=3.7.2", markers = "python_version < \"3.8\""}
 
 [package.extras]
+docs = ["sphinx (>=5.3)", "sphinx-rtd-theme (>=1.0)"]
 testing = ["coverage (>=6.2)", "flaky (>=3.5.0)", "hypothesis (>=5.7.1)", "mypy (>=0.931)", "pytest-trio (>=0.7.0)"]
 
 [[package]]
@@ -581,7 +582,7 @@ dev = ["environs"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "b4fbe433970ff0f90591ce86ffefeeeb5984ef1c212dfa3ef7ebf20e3497970a"
+content-hash = "3cbfb1d161276a3a7dc95b7803447af1830f7449bc8de00aa6f4b6c197ecf5df"
 
 [metadata.files]
 aiohttp = [
@@ -952,8 +953,8 @@ pytest = [
     {file = "pytest-7.2.0.tar.gz", hash = "sha256:c4014eb40e10f11f355ad4e3c2fb2c6c6d1919c73f3b5a433de4708202cade59"},
 ]
 pytest-asyncio = [
-    {file = "pytest-asyncio-0.19.0.tar.gz", hash = "sha256:ac4ebf3b6207259750bc32f4c1d8fcd7e79739edbc67ad0c58dd150b1d072fed"},
-    {file = "pytest_asyncio-0.19.0-py3-none-any.whl", hash = "sha256:7a97e37cfe1ed296e2e84941384bdd37c376453912d397ed39293e0916f521fa"},
+    {file = "pytest-asyncio-0.20.3.tar.gz", hash = "sha256:83cbf01169ce3e8eb71c6c278ccb0574d1a7a3bb8eaaf5e50e0ad342afb33b36"},
+    {file = "pytest_asyncio-0.20.3-py3-none-any.whl", hash = "sha256:f129998b209d04fcc65c96fc85c11e5316738358909a8399e93be553d7656442"},
 ]
 pytest-cov = [
     {file = "pytest-cov-4.0.0.tar.gz", hash = "sha256:996b79efde6433cdbd0088872dbc5fb3ed7fe1578b68cdbba634f14bb8dd0470"},
