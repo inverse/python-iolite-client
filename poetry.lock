@@ -22,7 +22,7 @@ speedups = ["Brotli", "aiodns", "cchardet"]
 
 [[package]]
 name = "aioresponses"
-version = "0.7.3"
+version = "0.7.4"
 description = "Mock out requests made by ClientSession from aiohttp package"
 category = "dev"
 optional = false
@@ -581,7 +581,7 @@ dev = ["environs"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "b4fbe433970ff0f90591ce86ffefeeeb5984ef1c212dfa3ef7ebf20e3497970a"
+content-hash = "735323b4f44b34a5c418b317fd89aa23a72a4a13257bd098d92a9d046c470220"
 
 [metadata.files]
 aiohttp = [
@@ -674,8 +674,8 @@ aiohttp = [
     {file = "aiohttp-3.8.3.tar.gz", hash = "sha256:3828fb41b7203176b82fe5d699e0d845435f2374750a44b480ea6b930f6be269"},
 ]
 aioresponses = [
-    {file = "aioresponses-0.7.3-py2.py3-none-any.whl", hash = "sha256:7b1897169062c92fa87d6ecc503ac566ac87fbfacb2504f8ca81c8035a2eb068"},
-    {file = "aioresponses-0.7.3.tar.gz", hash = "sha256:2c64ed5710ee8cb4e958c569184dad12f4c9cd5939135cb38f88c6a8261cceb3"},
+    {file = "aioresponses-0.7.4-py2.py3-none-any.whl", hash = "sha256:1160486b5ea96fcae6170cf2bdef029b9d3a283b7dbeabb3d7f1182769bfb6b7"},
+    {file = "aioresponses-0.7.4.tar.gz", hash = "sha256:9b8c108b36354c04633bad0ea752b55d956a7602fe3e3234b939fc44af96f1d8"},
 ]
 aiosignal = [
     {file = "aiosignal-1.2.0-py3-none-any.whl", hash = "sha256:26e62109036cd181df6e6ad646f91f0dcfd05fe16d0cb924138ff2ab75d64e3a"},

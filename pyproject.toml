@@ -25,7 +25,7 @@ pytest-cov = "*"
 responses = "*"
 pytest-socket = "*"
 freezegun = "*"
-aioresponses = "^0.7.2"
+aioresponses = "^0.7.4"
 pytest-asyncio = "^0.19.0"
 
 [tool.poetry.extras]
