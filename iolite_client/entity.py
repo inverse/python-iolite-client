@@ -70,12 +70,20 @@ class Room(Entity):
         self.heating: Optional[Heating] = None
 
     def add_device(self, device: Device):
+        if device.place_identifier != self.identifier:
+            raise Exception(
+                f"Trying to add device to wrong room {device.place_identifier} != {self.identifier}"
+            )
         self.devices[device.identifier] = device
 
     def has_device(self, device: Device) -> bool:
         return device.identifier in self.devices
 
     def add_heating(self, heating: Heating):
+        if heating.identifier != self.identifier:
+            raise Exception(
+                f"Trying to add heating to wrong room {heating.identifier} != {self.identifier}"
+            )
         self.heating = heating
 
     def get_devices_by_type(self, device_type: str) -> List[Device]:
