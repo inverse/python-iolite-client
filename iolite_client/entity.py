@@ -55,11 +55,17 @@ class RadiatorValve(Device):
 
 class Heating(Entity):
     def __init__(
-        self, identifier: str, name: str, current_temp: float, target_temp: float
+        self,
+        identifier: str,
+        name: str,
+        current_temp: float,
+        target_temp: float,
+        window_open: bool,
     ):
         super().__init__(identifier, name)
         self.current_temp = current_temp
         self.target_temp = target_temp
+        self.window_open = window_open
 
 
 class Room(Entity):
@@ -73,7 +79,6 @@ class Room(Entity):
             raise Exception(
                 f"Trying to add device to wrong room {device.place_identifier} != {self.identifier}"
             )
-
         self.devices[device.identifier] = device
 
     def has_device(self, device: Device) -> bool:

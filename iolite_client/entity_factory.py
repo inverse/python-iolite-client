@@ -44,6 +44,7 @@ def create_heating(payload: dict) -> Heating:
         payload["name"],
         payload["currentTemperature"],
         payload["targetTemperature"],
+        payload["windowOpen"],
     )
 
 
