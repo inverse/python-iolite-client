@@ -1,7 +1,7 @@
 import datetime
 import json
 import unittest
-from unittest.mock import Mock
+from unittest.mock import Mock, AsyncMock
 
 import aiohttp
 import pytest
@@ -112,7 +112,6 @@ class OAuthWrapperTest(unittest.TestCase):
 
     @freeze_time("2021-01-01 00:00:00")
     def test_invalid_token_refresh(self):
-
         token = self._get_token(datetime.datetime(2021, 1, 1, 0, 0, 1))
         self.mock_oauth_storage.fetch_access_token.return_value = token
 
@@ -138,10 +137,10 @@ class OAuthWrapperTest(unittest.TestCase):
         }
 
 
-class AsyncOAuthWrapperTest(unittest.TestCase):
-    def setUp(self) -> None:
-        self.mock_async_oauth_handler = Mock()
-        self.mock_async_oauth_storage = Mock()
+class AsyncOAuthWrapperTest(unittest.IsolatedAsyncioTestCase):
+    async def asyncSetUp(self) -> None:
+        self.mock_async_oauth_handler = AsyncMock()
+        self.mock_async_oauth_storage = AsyncMock()
         self.async_oauth_wrapper = AsyncOAuthWrapper(
             self.mock_async_oauth_handler, self.mock_async_oauth_storage
         )
@@ -175,7 +174,6 @@ class AsyncOAuthWrapperTest(unittest.TestCase):
     @pytest.mark.asyncio
     @freeze_time("2021-01-01 00:00:00")
     async def test_invalid_token_refresh(self):
-
         token = self._get_token(datetime.datetime(2021, 1, 1, 0, 0, 1))
         self.mock_async_oauth_storage.fetch_access_token.return_value = token
 
