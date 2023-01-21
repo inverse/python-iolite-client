@@ -11,7 +11,9 @@ class DiscoveredTest(unittest.TestCase):
         self.bedroom_switch = Switch(
             "2", "Bedroom Switch", self.bedroom.identifier, "Generic"
         )
-        self.bedroom_heating = Heating(self.bedroom.identifier, "Bedroom", 10, 20, False)
+        self.bedroom_heating = Heating(
+            self.bedroom.identifier, "Bedroom", 10, 20, False
+        )
         self.discovered = Discovered()
 
     def test_switch_without_room_is_unmapped(self):

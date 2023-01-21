@@ -55,7 +55,12 @@ class RadiatorValve(Device):
 
 class Heating(Entity):
     def __init__(
-        self, identifier: str, name: str, current_temp: float, target_temp: float, window_open: bool
+        self,
+        identifier: str,
+        name: str,
+        current_temp: float,
+        target_temp: float,
+        window_open: bool,
     ):
         super().__init__(identifier, name)
         self.current_temp = current_temp

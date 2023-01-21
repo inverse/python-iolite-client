@@ -1,7 +1,7 @@
 import datetime
 import json
 import unittest
-from unittest.mock import Mock, AsyncMock
+from unittest.mock import AsyncMock, Mock
 
 import aiohttp
 import pytest

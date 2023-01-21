@@ -19,7 +19,9 @@ class RoomTest(unittest.TestCase):
             "Normal",
             0.0,
         )
-        self.bedroom_heating = Heating(self.bedroom.identifier, "Bedroom", 20.0, 21.5, False)
+        self.bedroom_heating = Heating(
+            self.bedroom.identifier, "Bedroom", 20.0, 21.5, False
+        )
 
     def test_empty_room(self):
         self.assertEqual(0, len(self.bedroom.devices))
