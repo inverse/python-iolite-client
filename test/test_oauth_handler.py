@@ -1,7 +1,7 @@
 import datetime
 import json
 import unittest
-from unittest.mock import AsyncMock, Mock
+from unittest.mock import Mock
 
 import aiohttp
 import pytest
@@ -137,10 +137,10 @@ class OAuthWrapperTest(unittest.TestCase):
         }
 
 
-class AsyncOAuthWrapperTest(unittest.IsolatedAsyncioTestCase):
+class AsyncOAuthWrapperTest(unittest.TestCase):
     async def asyncSetUp(self) -> None:
-        self.mock_async_oauth_handler = AsyncMock()
-        self.mock_async_oauth_storage = AsyncMock()
+        self.mock_async_oauth_handler = Mock()
+        self.mock_async_oauth_storage = Mock()
         self.async_oauth_wrapper = AsyncOAuthWrapper(
             self.mock_async_oauth_handler, self.mock_async_oauth_storage
         )
