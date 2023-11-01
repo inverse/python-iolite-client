@@ -4,7 +4,7 @@ import logging
 from base64 import b64encode
 from collections import defaultdict
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Union, Callable
+from typing import Dict, List, Optional, Union
 
 import websockets
 
@@ -144,47 +144,6 @@ class Client:
         self.sid = sid
         self.username = username
         self.password = password
-        self.messages = []
-                
-    async def _consumer_handler(self, websocket):
-        async for message in websocket:
-            
-            # TODO: Build up discovered
-            
-            # TODO: add handlers to getting updates
-            
-            await consumer(message)
-        
-    async def _producer_handler(self, websocket):
-        while True:
-            if len(self.messages) == 0:
-                # TODO: potentially send key alive each 5 seconds
-                await asyncio.sleep(1)
-                continue
-            
-            message = self.messages.pop()
-            await self.__send_request(message, websocket)
-
-        
-    async def _handler(self, websocket):
-        await asyncio.gather(
-            self._consumer_handler(websocket),
-            self._producer_handler(websocket),
-        )
-        
-        
-    async def start(self):
-        self.messages.append(self.request_handler.get_subscribe_request("places"))
-        self.messages.append(self.request_handler.get_subscribe_request("devices"))
-        self.messages.append(self.request_handler.get_query_request("situationProfileModel"))
-           
-        uri = f"{self.BASE_URL}/bus/websocket/application/json?SID={self.sid}"
-        async with websockets.connect(uri, extra_headers=self._get_default_headers()) as websocket:
-            self._handler(websocket)
-        
-    async def async_set_temp(self, device_id: str, temp: float):
-        self.messages.append(self.request_handler.get_action_request(device_id, temp))
-        
 
     @staticmethod
     async def __send_request(request: Union[str, dict], websocket):
@@ -344,3 +303,10 @@ class Client:
     def discover(self):
         """Discovers the entities registered within the heating system."""
         asyncio.run(self.async_discover())
+
+    async def async_set_temp(self, device, temp: float):
+        request = self.request_handler.get_action_request(device, temp)
+        await asyncio.create_task(self._fetch_application([request]))
+
+    def set_temp(self, device, temp: float):
+        asyncio.run(self.async_set_temp(device, temp))
