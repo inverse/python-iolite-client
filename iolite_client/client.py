@@ -304,9 +304,12 @@ class Client:
         """Discovers the entities registered within the heating system."""
         asyncio.run(self.async_discover())
 
-    async def async_set_temp(self, device, temp: float):
-        request = self.request_handler.get_action_request(device, temp)
+    async def async_set_property(self, device, property: str, value: float):
+        request = self.request_handler.get_action_request(device, property, value)
         await asyncio.create_task(self._fetch_application([request]))
 
-    def set_temp(self, device, temp: float):
-        asyncio.run(self.async_set_temp(device, temp))
+    def set_temp(self, device, value: float):
+        asyncio.run(self.async_set_property(device, 'heatingTemperatureSetting', value))
+
+    def set_blind_level(self, device, value: float):
+        asyncio.run(self.async_set_property(device, 'blindLevel', value))

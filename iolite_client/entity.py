@@ -29,6 +29,32 @@ class Device(PlaceEntity):
 class Switch(Device):
     pass
 
+class Blind(Device):
+    def __init__(
+        self,
+        identifier: str,
+        name: str,
+        place_identifier: str,
+        manufacturer: str,
+        blind_level: int,
+    ):
+        super().__init__(identifier, name, place_identifier, manufacturer)
+        self.blind_level = blind_level
+
+class HumiditySensor(Device):
+    def __init__(
+        self,
+        identifier: str,
+        name: str,
+        place_identifier: str,
+        manufacturer: str,
+        current_env_temp: float,
+        humidity_level: float,
+    ):
+        super().__init__(identifier, name, place_identifier, manufacturer)
+        self.current_env_temp = current_env_temp
+        self.humidity_level = humidity_level
+
 
 class Lamp(Device):
     pass
@@ -53,6 +79,22 @@ class RadiatorValve(Device):
         self.current_env_temp = current_env_temp
 
 
+class InFloorValve(Device):
+    def __init__(
+        self,
+        identifier: str,
+        name: str,
+        place_identifier: str,
+        manufacturer: str,
+        current_env_temp: float,
+        heating_temperature_setting: float,
+        device_status: str,
+    ):
+        super().__init__(identifier, name, place_identifier, manufacturer)
+        self.heating_temperature_setting = heating_temperature_setting
+        self.device_status = device_status
+        self.current_env_temp = current_env_temp
+
 class Heating(Entity):
     def __init__(
         self,
@@ -60,7 +102,7 @@ class Heating(Entity):
         name: str,
         current_temp: float,
         target_temp: float,
-        window_open: bool,
+        window_open: Optional[bool],
     ):
         super().__init__(identifier, name)
         self.current_temp = current_temp
