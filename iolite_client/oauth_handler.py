@@ -16,10 +16,10 @@ CLIENT_ID = "deuwo_mia_app"
 
 class OAuthHandlerHelper:
     @staticmethod
-    def get_access_token_query(code: str, name: str) -> str:
+    def get_access_token_query(code: str, name: str, client_id: str) -> str:
         return urlencode(
             {
-                "client_id": CLIENT_ID,
+                "client_id": client_id,
                 "grant_type": "authorization_code",
                 "code": code,
                 "name": name,
@@ -27,10 +27,10 @@ class OAuthHandlerHelper:
         )
 
     @staticmethod
-    def get_new_access_token_query(refresh_token: str) -> str:
+    def get_new_access_token_query(refresh_token: str, client_id: str) -> str:
         return urlencode(
             {
-                "client_id": CLIENT_ID,
+                "client_id": client_id,
                 "grant_type": "refresh_token",
                 "refresh_token": refresh_token,
             }
@@ -53,9 +53,10 @@ class OAuthHandlerHelper:
 
 
 class OAuthHandler:
-    def __init__(self, username: str, password: str):
+    def __init__(self, username: str, password: str, client_id: str = CLIENT_ID):
         self.username = username
         self.password = password
+        self.client_id = client_id
 
     def get_access_token(self, code: str, name: str) -> dict:
         """
@@ -64,7 +65,7 @@ class OAuthHandler:
         :param name: The name of the device being paired
         :return:
         """
-        query = OAuthHandlerHelper.get_access_token_query(code, name)
+        query = OAuthHandlerHelper.get_access_token_query(code, name, self.client_id)
         response = requests.post(
             f"{BASE_URL}/ui/token?{query}", auth=(self.username, self.password)
         )
@@ -77,7 +78,7 @@ class OAuthHandler:
         :param refresh_token: The refresh token
         :return: dict containing access token, and new refresh token
         """
-        query = OAuthHandlerHelper.get_new_access_token_query(refresh_token)
+        query = OAuthHandlerHelper.get_new_access_token_query(refresh_token, self.client_id)
         response = requests.post(
             f"{BASE_URL}/ui/token?{query}", auth=(self.username, self.password)
         )
@@ -100,11 +101,12 @@ class OAuthHandler:
 
 class AsyncOAuthHandler:
     def __init__(
-        self, username: str, password: str, web_session: aiohttp.ClientSession
+        self, username: str, password: str, web_session: aiohttp.ClientSession, client_id: str = CLIENT_ID
     ):
         self.username = username
         self.password = password
         self.web_session = web_session
+        self.client_id = client_id
 
     async def get_access_token(self, code: str, name: str) -> dict:
         """
@@ -113,7 +115,7 @@ class AsyncOAuthHandler:
         :param name: The name of the device being paired
         :return:
         """
-        query = OAuthHandlerHelper.get_access_token_query(code, name)
+        query = OAuthHandlerHelper.get_access_token_query(code, name, self.client_id)
         response = await self.web_session.post(
             f"{BASE_URL}/ui/token?{query}",
             auth=aiohttp.BasicAuth(self.username, self.password),
@@ -127,7 +129,7 @@ class AsyncOAuthHandler:
         :param refresh_token: The refresh token
         :return: dict containing access token, and new refresh token
         """
-        query = OAuthHandlerHelper.get_new_access_token_query(refresh_token)
+        query = OAuthHandlerHelper.get_new_access_token_query(refresh_token, self.client_id)
         response = await self.web_session.post(
             f"{BASE_URL}/ui/token?{query}",
             auth=aiohttp.BasicAuth(self.username, self.password),

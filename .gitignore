@@ -5,6 +5,7 @@
 # Secrets
 /.env
 access_token.json
+access_token_*.json
 
 # Cache
 __pycache__
