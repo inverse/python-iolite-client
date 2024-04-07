@@ -1,4 +1,4 @@
-from iolite_client.entity import Device, Heating, Lamp, RadiatorValve, Room, Switch
+from iolite_client.entity import Device, Heating, Lamp, RadiatorValve, InFloorValve, Room, Switch, Blind, HumiditySensor
 from iolite_client.exceptions import UnsupportedDeviceError
 
 
@@ -42,14 +42,15 @@ def create_heating(payload: dict) -> Heating:
     return Heating(
         payload["id"],
         payload["name"],
-        payload["currentTemperature"],
+        payload.get("currentTemperature", None),
         payload["targetTemperature"],
-        payload["windowOpen"],
+        payload.get("windowOpen", None),
     )
 
 
 def _create_device(identifier: str, type_name: str, payload: dict):
     place_identifier = payload["placeIdentifier"]
+    model_name = payload["modelName"]
     if type_name == "Lamp":
         return Lamp(
             identifier,
@@ -73,21 +74,59 @@ def _create_device(identifier: str, type_name: str, payload: dict):
         )
     elif type_name == "Heater":
         properties = payload["properties"]
-
         current_env_temp = _get_prop(properties, "currentEnvironmentTemperature")
-        battery_level = _get_prop(properties, "batteryLevel")
-        heating_mode = _get_prop(properties, "heatingMode")
-        valve_position = _get_prop(properties, "valvePosition")
 
-        return RadiatorValve(
+        if model_name.startswith("38de6001c3ad"):
+            heating_temperature_setting = _get_prop(properties, "heatingTemperatureSetting")
+            device_status = _get_prop(properties, "deviceStatus")
+            return InFloorValve(
+                identifier,
+                payload["friendlyName"],
+                place_identifier,
+                payload["manufacturer"],
+                current_env_temp,
+                heating_temperature_setting,
+                device_status,
+            )
+
+        else:
+            battery_level = _get_prop(properties, "batteryLevel")
+            heating_mode = _get_prop(properties, "heatingMode")
+            valve_position = _get_prop(properties, "valvePosition")
+
+            return RadiatorValve(
+                identifier,
+                payload["friendlyName"],
+                place_identifier,
+                payload["manufacturer"],
+                current_env_temp,
+                battery_level,
+                heating_mode,
+                valve_position,
+            )
+    elif type_name == "Blind":
+        properties = payload["properties"]
+        blind_level = _get_prop(properties, "blindLevel")
+
+        return Blind(
+            identifier,
+            payload["friendlyName"],
+            place_identifier,
+            payload["manufacturer"],
+            blind_level
+        )
+    elif type_name == "HumiditySensor":
+        properties = payload["properties"]
+        current_env_temp = _get_prop(properties, "currentEnvironmentTemperature")
+        humidity_level = _get_prop(properties, "humidityLevel")
+
+        return HumiditySensor(
             identifier,
             payload["friendlyName"],
             place_identifier,
             payload["manufacturer"],
             current_env_temp,
-            battery_level,
-            heating_mode,
-            valve_position,
+            humidity_level
         )
     else:
         raise UnsupportedDeviceError(type_name, identifier, payload)
