@@ -78,7 +78,9 @@ class OAuthHandler:
         :param refresh_token: The refresh token
         :return: dict containing access token, and new refresh token
         """
-        query = OAuthHandlerHelper.get_new_access_token_query(refresh_token, self.client_id)
+        query = OAuthHandlerHelper.get_new_access_token_query(
+            refresh_token, self.client_id
+        )
         response = requests.post(
             f"{BASE_URL}/ui/token?{query}", auth=(self.username, self.password)
         )
@@ -101,7 +103,11 @@ class OAuthHandler:
 
 class AsyncOAuthHandler:
     def __init__(
-        self, username: str, password: str, web_session: aiohttp.ClientSession, client_id: str = CLIENT_ID
+        self,
+        username: str,
+        password: str,
+        web_session: aiohttp.ClientSession,
+        client_id: str = CLIENT_ID,
     ):
         self.username = username
         self.password = password
@@ -129,7 +135,9 @@ class AsyncOAuthHandler:
         :param refresh_token: The refresh token
         :return: dict containing access token, and new refresh token
         """
-        query = OAuthHandlerHelper.get_new_access_token_query(refresh_token, self.client_id)
+        query = OAuthHandlerHelper.get_new_access_token_query(
+            refresh_token, self.client_id
+        )
         response = await self.web_session.post(
             f"{BASE_URL}/ui/token?{query}",
             auth=aiohttp.BasicAuth(self.username, self.password),

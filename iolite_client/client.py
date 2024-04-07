@@ -309,7 +309,7 @@ class Client:
         await asyncio.create_task(self._fetch_application([request]))
 
     def set_temp(self, device, value: float):
-        asyncio.run(self.async_set_property(device, 'heatingTemperatureSetting', value))
+        asyncio.run(self.async_set_property(device, "heatingTemperatureSetting", value))
 
     def set_blind_level(self, device, value: float):
-        asyncio.run(self.async_set_property(device, 'blindLevel', value))
+        asyncio.run(self.async_set_property(device, "blindLevel", value))

@@ -1,4 +1,14 @@
-from iolite_client.entity import Device, Heating, Lamp, RadiatorValve, InFloorValve, Room, Switch, Blind, HumiditySensor
+from iolite_client.entity import (
+    Blind,
+    Device,
+    Heating,
+    HumiditySensor,
+    InFloorValve,
+    Lamp,
+    RadiatorValve,
+    Room,
+    Switch,
+)
 from iolite_client.exceptions import UnsupportedDeviceError
 
 
@@ -50,7 +60,7 @@ def create_heating(payload: dict) -> Heating:
 
 def _create_device(identifier: str, type_name: str, payload: dict):
     place_identifier = payload["placeIdentifier"]
-    model_name = payload["modelName"]
+    model_name = payload.get("modelName", None)
     if type_name == "Lamp":
         return Lamp(
             identifier,
@@ -76,8 +86,10 @@ def _create_device(identifier: str, type_name: str, payload: dict):
         properties = payload["properties"]
         current_env_temp = _get_prop(properties, "currentEnvironmentTemperature")
 
-        if model_name.startswith("38de6001c3ad"):
-            heating_temperature_setting = _get_prop(properties, "heatingTemperatureSetting")
+        if model_name is not None and model_name.startswith("38de6001c3ad"):
+            heating_temperature_setting = _get_prop(
+                properties, "heatingTemperatureSetting"
+            )
             device_status = _get_prop(properties, "deviceStatus")
             return InFloorValve(
                 identifier,
@@ -113,7 +125,7 @@ def _create_device(identifier: str, type_name: str, payload: dict):
             payload["friendlyName"],
             place_identifier,
             payload["manufacturer"],
-            blind_level
+            blind_level,
         )
     elif type_name == "HumiditySensor":
         properties = payload["properties"]
@@ -126,7 +138,7 @@ def _create_device(identifier: str, type_name: str, payload: dict):
             place_identifier,
             payload["manufacturer"],
             current_env_temp,
-            humidity_level
+            humidity_level,
         )
     else:
         raise UnsupportedDeviceError(type_name, identifier, payload)

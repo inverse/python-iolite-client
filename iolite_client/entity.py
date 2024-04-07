@@ -29,6 +29,7 @@ class Device(PlaceEntity):
 class Switch(Device):
     pass
 
+
 class Blind(Device):
     def __init__(
         self,
@@ -40,6 +41,7 @@ class Blind(Device):
     ):
         super().__init__(identifier, name, place_identifier, manufacturer)
         self.blind_level = blind_level
+
 
 class HumiditySensor(Device):
     def __init__(
@@ -94,6 +96,7 @@ class InFloorValve(Device):
         self.heating_temperature_setting = heating_temperature_setting
         self.device_status = device_status
         self.current_env_temp = current_env_temp
+
 
 class Heating(Entity):
     def __init__(

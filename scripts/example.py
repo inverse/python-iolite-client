@@ -4,7 +4,7 @@ import sys
 from environs import Env
 
 from iolite_client.client import Client
-from iolite_client.entity import RadiatorValve, Blind, HumiditySensor, InFloorValve
+from iolite_client.entity import Blind, HumiditySensor, InFloorValve, RadiatorValve
 from iolite_client.oauth_handler import LocalOAuthStorage, OAuthHandler, OAuthWrapper
 
 env = Env()
