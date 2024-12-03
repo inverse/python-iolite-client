@@ -165,7 +165,7 @@ class Client:
         logger.info("Connecting to heating WS")
         uri = f"{self.BASE_URL}/heating/ws?SID={self.sid}"
         async with websockets.connect(
-            uri, extra_headers=self._get_default_headers()
+            uri, additional_headers=self._get_default_headers()
         ) as websocket:
             async for response in websocket:
                 logger.debug(
@@ -183,7 +183,7 @@ class Client:
         logger.info("Connecting to devices WS")
         uri = f"{self.BASE_URL}/devices/ws?SID={self.sid}"
         async with websockets.connect(
-            uri, extra_headers=self._get_default_headers()
+            uri, additional_headers=self._get_default_headers()
         ) as websocket:
             async for response in websocket:
                 logger.debug(
@@ -199,7 +199,7 @@ class Client:
         logger.info("Connecting to JSON WS")
         uri = f"{self.BASE_URL}/bus/websocket/application/json?SID={self.sid}"
         async with websockets.connect(
-            uri, extra_headers=self._get_default_headers()
+            uri, additional_headers=self._get_default_headers()
         ) as websocket:
             for request in requests:
                 await self.__send_request(request, websocket)
