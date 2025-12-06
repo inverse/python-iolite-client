@@ -62,26 +62,32 @@ def _create_device(identifier: str, type_name: str, payload: dict):
     place_identifier = payload["placeIdentifier"]
     model_name = payload.get("modelName", None)
     if type_name == "Lamp":
-        return Lamp(
+        device = Lamp(
             identifier,
             payload["friendlyName"],
             place_identifier,
             payload["manufacturer"],
         )
+        device.model_name = model_name
+        return device
     elif type_name == "TwoChannelRockerSwitch":
-        return Switch(
+        device = Switch(
             identifier,
             payload["friendlyName"],
             place_identifier,
             payload["manufacturer"],
         )
+        device.model_name = model_name
+        return device
     elif type_name == "Lamp":
-        return Lamp(
+        device = Lamp(
             identifier,
             payload["friendlyName"],
             place_identifier,
             payload["manufacturer"],
         )
+        device.model_name = model_name
+        return device
     elif type_name == "Heater":
         properties = payload["properties"]
         current_env_temp = _get_prop(properties, "currentEnvironmentTemperature")
@@ -91,7 +97,7 @@ def _create_device(identifier: str, type_name: str, payload: dict):
                 properties, "heatingTemperatureSetting"
             )
             device_status = _get_prop(properties, "deviceStatus")
-            return InFloorValve(
+            device = InFloorValve(
                 identifier,
                 payload["friendlyName"],
                 place_identifier,
@@ -100,13 +106,15 @@ def _create_device(identifier: str, type_name: str, payload: dict):
                 heating_temperature_setting,
                 device_status,
             )
+            device.model_name = model_name
+            return device
 
         else:
             battery_level = _get_prop(properties, "batteryLevel")
             heating_mode = _get_prop(properties, "heatingMode")
             valve_position = _get_prop(properties, "valvePosition")
 
-            return RadiatorValve(
+            device = RadiatorValve(
                 identifier,
                 payload["friendlyName"],
                 place_identifier,
@@ -116,23 +124,27 @@ def _create_device(identifier: str, type_name: str, payload: dict):
                 heating_mode,
                 valve_position,
             )
+            device.model_name = model_name
+            return device
     elif type_name == "Blind":
         properties = payload["properties"]
         blind_level = _get_prop(properties, "blindLevel")
 
-        return Blind(
+        device = Blind(
             identifier,
             payload["friendlyName"],
             place_identifier,
             payload["manufacturer"],
             blind_level,
         )
+        device.model_name = model_name
+        return device
     elif type_name == "HumiditySensor":
         properties = payload["properties"]
         current_env_temp = _get_prop(properties, "currentEnvironmentTemperature")
         humidity_level = _get_prop(properties, "humidityLevel")
 
-        return HumiditySensor(
+        device = HumiditySensor(
             identifier,
             payload["friendlyName"],
             place_identifier,
@@ -140,6 +152,8 @@ def _create_device(identifier: str, type_name: str, payload: dict):
             current_env_temp,
             humidity_level,
         )
+        device.model_name = model_name
+        return device
     else:
         raise UnsupportedDeviceError(type_name, identifier, payload)
 

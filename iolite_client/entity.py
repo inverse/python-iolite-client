@@ -20,6 +20,9 @@ class Device(PlaceEntity):
     ):
         super().__init__(identifier, name, place_identifier)
         self.manufacturer = manufacturer
+        # Optional hardware/model identifier when available (e.g. from payload["modelName"]).
+        # Kept as a simple attribute to avoid changing constructor signatures across subclasses.
+        self.model_name: Optional[str] = None
 
     @classmethod
     def get_type(cls) -> str:

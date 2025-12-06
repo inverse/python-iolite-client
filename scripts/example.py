@@ -58,6 +58,8 @@ for room in client.discovered.get_rooms():
 
     for device in room.devices.values():
         print(f"- {device.name} {device.get_type()}")
+        if getattr(device, "model_name", None):
+            print(f"  - model: {device.model_name}")
         if isinstance(device, RadiatorValve):
             print(f"  - current: {device.current_env_temp}")
             print(f"  - mode: {device.heating_mode}")
