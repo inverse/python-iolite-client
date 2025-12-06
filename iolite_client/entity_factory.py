@@ -92,7 +92,7 @@ def _create_device(identifier: str, type_name: str, payload: dict):
         properties = payload["properties"]
         current_env_temp = _get_prop(properties, "currentEnvironmentTemperature")
 
-        if model_name is not None and model_name.startswith("38de6001c3ad"):
+        if model_name is not None and (model_name.startswith("38de6001c3ad") or model_name.startswith("38de6001c816")):
             heating_temperature_setting = _get_prop(
                 properties, "heatingTemperatureSetting"
             )
