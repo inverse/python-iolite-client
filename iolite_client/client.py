@@ -161,12 +161,30 @@ class Client:
 
         return headers
 
+    def _ws_connect(self, uri: str):
+        """
+        Create a websockets connection using the correct headers parameter for the
+        installed websockets version.
+
+        websockets < 10: use `additional_headers`
+        websockets >= 10: use `extra_headers`
+        """
+        headers = self._get_default_headers()
+        try:
+            import inspect
+
+            sig = inspect.signature(websockets.connect)
+            if "extra_headers" in sig.parameters:
+                return websockets.connect(uri, extra_headers=headers)
+        except Exception:
+            # Fall back to legacy parameter name if inspection fails
+            pass
+        return websockets.connect(uri, additional_headers=headers)
+
     async def _fetch_heating(self):
         logger.info("Connecting to heating WS")
         uri = f"{self.BASE_URL}/heating/ws?SID={self.sid}"
-        async with websockets.connect(
-            uri, extra_headers=self._get_default_headers()
-        ) as websocket:
+        async with self._ws_connect(uri) as websocket:
             async for response in websocket:
                 logger.debug(
                     f"Response received (heating) {response}",
@@ -182,9 +200,7 @@ class Client:
     async def _devices_handler(self):
         logger.info("Connecting to devices WS")
         uri = f"{self.BASE_URL}/devices/ws?SID={self.sid}"
-        async with websockets.connect(
-            uri, extra_headers=self._get_default_headers()
-        ) as websocket:
+        async with self._ws_connect(uri) as websocket:
             async for response in websocket:
                 logger.debug(
                     f"Response received (device) {response}",
@@ -198,9 +214,7 @@ class Client:
     async def _fetch_application(self, requests: list):
         logger.info("Connecting to JSON WS")
         uri = f"{self.BASE_URL}/bus/websocket/application/json?SID={self.sid}"
-        async with websockets.connect(
-            uri, extra_headers=self._get_default_headers()
-        ) as websocket:
+        async with self._ws_connect(uri) as websocket:
             for request in requests:
                 await self.__send_request(request, websocket)
 
