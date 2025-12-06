@@ -58,9 +58,11 @@ def create_heating(payload: dict) -> Heating:
     )
 
 
-def _create_device(identifier: str, type_name: str, payload: dict):
+def _create_device(identifier: str, type_name: str, payload: dict) -> Device:
     place_identifier = payload["placeIdentifier"]
     model_name = payload.get("modelName", None)
+    # Ensure mypy infers a common supertype across branches
+    device: Device
     if type_name == "Lamp":
         device = Lamp(
             identifier,
@@ -79,20 +81,14 @@ def _create_device(identifier: str, type_name: str, payload: dict):
         )
         device.model_name = model_name
         return device
-    elif type_name == "Lamp":
-        device = Lamp(
-            identifier,
-            payload["friendlyName"],
-            place_identifier,
-            payload["manufacturer"],
-        )
-        device.model_name = model_name
-        return device
     elif type_name == "Heater":
         properties = payload["properties"]
         current_env_temp = _get_prop(properties, "currentEnvironmentTemperature")
 
-        if model_name is not None and (model_name.startswith("38de6001c3ad") or model_name.startswith("38de6001c816")):
+        if model_name is not None and (
+            model_name.startswith("38de6001c3ad")
+            or model_name.startswith("38de6001c816")
+        ):
             heating_temperature_setting = _get_prop(
                 properties, "heatingTemperatureSetting"
             )
