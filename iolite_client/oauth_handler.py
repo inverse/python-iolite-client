@@ -53,10 +53,17 @@ class OAuthHandlerHelper:
 
 
 class OAuthHandler:
-    def __init__(self, username: str, password: str, client_id: str = CLIENT_ID):
+    def __init__(
+        self,
+        username: str,
+        password: str,
+        client_id: str = CLIENT_ID,
+        verify_ssl: bool = True,
+    ):
         self.username = username
         self.password = password
         self.client_id = client_id
+        self.verify_ssl = verify_ssl
 
     def get_access_token(self, code: str, name: str) -> dict:
         """
@@ -67,7 +74,9 @@ class OAuthHandler:
         """
         query = OAuthHandlerHelper.get_access_token_query(code, name, self.client_id)
         response = requests.post(
-            f"{BASE_URL}/ui/token?{query}", auth=(self.username, self.password)
+            f"{BASE_URL}/ui/token?{query}",
+            auth=(self.username, self.password),
+            verify=self.verify_ssl,
         )
         response.raise_for_status()
         return OAuthHandlerHelper.add_expires_at(json.loads(response.text))
@@ -82,7 +91,9 @@ class OAuthHandler:
             refresh_token, self.client_id
         )
         response = requests.post(
-            f"{BASE_URL}/ui/token?{query}", auth=(self.username, self.password)
+            f"{BASE_URL}/ui/token?{query}",
+            auth=(self.username, self.password),
+            verify=self.verify_ssl,
         )
         response.raise_for_status()
         return OAuthHandlerHelper.add_expires_at(json.loads(response.text))
@@ -95,7 +106,9 @@ class OAuthHandler:
         """
         query = OAuthHandlerHelper.get_sid_query(access_token)
         response = requests.get(
-            f"{BASE_URL}/ui/sid?{query}", auth=(self.username, self.password)
+            f"{BASE_URL}/ui/sid?{query}",
+            auth=(self.username, self.password),
+            verify=self.verify_ssl,
         )
         response.raise_for_status()
         return json.loads(response.text).get("SID")
@@ -108,11 +121,13 @@ class AsyncOAuthHandler:
         password: str,
         web_session: aiohttp.ClientSession,
         client_id: str = CLIENT_ID,
+        verify_ssl: bool = True,
     ):
         self.username = username
         self.password = password
         self.web_session = web_session
         self.client_id = client_id
+        self.verify_ssl = verify_ssl
 
     async def get_access_token(self, code: str, name: str) -> dict:
         """
@@ -125,6 +140,7 @@ class AsyncOAuthHandler:
         response = await self.web_session.post(
             f"{BASE_URL}/ui/token?{query}",
             auth=aiohttp.BasicAuth(self.username, self.password),
+            ssl=self.verify_ssl,
         )
         response.raise_for_status()
         return OAuthHandlerHelper.add_expires_at(await response.json())
@@ -141,6 +157,7 @@ class AsyncOAuthHandler:
         response = await self.web_session.post(
             f"{BASE_URL}/ui/token?{query}",
             auth=aiohttp.BasicAuth(self.username, self.password),
+            ssl=self.verify_ssl,
         )
         response.raise_for_status()
         return OAuthHandlerHelper.add_expires_at(await response.json())
@@ -155,6 +172,7 @@ class AsyncOAuthHandler:
         response = await self.web_session.get(
             f"{BASE_URL}/ui/sid?{query}",
             auth=aiohttp.BasicAuth(self.username, self.password),
+            ssl=self.verify_ssl,
         )
         response.raise_for_status()
         response_json = await response.json()

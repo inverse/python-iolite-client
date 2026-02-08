@@ -1,6 +1,7 @@
 import asyncio
 import json
 import logging
+import ssl
 from base64 import b64encode
 from collections import defaultdict
 from dataclasses import dataclass
@@ -138,12 +139,13 @@ class Client:
 
     BASE_URL = "wss://remote.iolite.de"
 
-    def __init__(self, sid: str, username: str, password: str):
+    def __init__(self, sid: str, username: str, password: str, verify_ssl: bool = True):
         self.discovered = Discovered()
         self.request_handler = RequestHandler()
         self.sid = sid
         self.username = username
         self.password = password
+        self.verify_ssl = verify_ssl
 
     @staticmethod
     async def __send_request(request: Union[str, dict], websocket):
@@ -170,16 +172,27 @@ class Client:
         websockets >= 10: use `extra_headers`
         """
         headers = self._get_default_headers()
+
+        ssl_context = None
+        if not self.verify_ssl:
+            ssl_context = ssl.create_default_context()
+            ssl_context.check_hostname = False
+            ssl_context.verify_mode = ssl.CERT_NONE
+
         try:
             import inspect
 
             sig = inspect.signature(websockets.connect)
             if "extra_headers" in sig.parameters:
-                return websockets.connect(uri, extra_headers=headers)
+                return websockets.connect(
+                    uri, extra_headers=headers, ssl=ssl_context
+                )
         except Exception:
             # Fall back to legacy parameter name if inspection fails
             pass
-        return websockets.connect(uri, additional_headers=headers)
+        return websockets.connect(
+            uri, additional_headers=headers, ssl=ssl_context
+        )
 
     async def _fetch_heating(self):
         logger.info("Connecting to heating WS")

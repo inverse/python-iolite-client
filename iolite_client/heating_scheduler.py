@@ -40,18 +40,27 @@ class HeatingScheduler(object):
     BASE_URL = "https://remote.iolite.de"
     HEATING_ENDPOINT = "/heating/api/heating/"
 
-    def __init__(self, sid: str, username: str, password: str, room_id: str):
+    def __init__(
+        self,
+        sid: str,
+        username: str,
+        password: str,
+        room_id: str,
+        verify_ssl: bool = True,
+    ):
         """The HeatingScheduler comprises methods to interact with the heating interval API.
 
         :param sid: The session ID, used for authentication
         :param username: The username, used for authentication
         :param password: The password mathing the username, used for authentication
         :param room_id: The room to set or change the heating intervals for.
+        :param verify_ssl: Whether to verify the SSL certificate
         """
         self.sid = sid
         self.username = username
         self.password = password
         self.room_id = room_id
+        self.verify_ssl = verify_ssl
         user_pass = f"{self.username}:{self.password}"
         self.auth_value = b64encode(user_pass.encode()).decode("ascii")
 
@@ -64,6 +73,7 @@ class HeatingScheduler(object):
             {
                 "headers": headers,
                 "params": params,
+                "verify": self.verify_ssl,
             },
         )
 

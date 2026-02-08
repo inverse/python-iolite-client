@@ -30,6 +30,7 @@ class TestClient(unittest.TestCase):
         cls.request_arguments = {
             "headers": {"Authorization": f"Basic {auth_value}"},
             "params": {"SID": "MySID"},
+            "verify": True,
         }
         cls.scheduler_endpoint = (
             "https://remote.iolite.de/heating/api/heating/placeIdentifier-1"
