@@ -175,7 +175,7 @@ class Client:
 
         kwargs = {}
         if not self.verify_ssl:
-            ssl_context = ssl.create_default_context()
+            ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
             ssl_context.check_hostname = False
             ssl_context.verify_mode = ssl.CERT_NONE
             kwargs["ssl"] = ssl_context
@@ -238,7 +238,7 @@ class Client:
                     break
 
                 if response.request:
-                    await self.__send_request(request, websocket)
+                    await self.__send_request(response.request, websocket)
 
             logger.info("Finished JSON WS")
 
