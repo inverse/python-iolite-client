@@ -173,26 +173,23 @@ class Client:
         """
         headers = self._get_default_headers()
 
-        ssl_context = None
+        kwargs = {}
         if not self.verify_ssl:
             ssl_context = ssl.create_default_context()
             ssl_context.check_hostname = False
             ssl_context.verify_mode = ssl.CERT_NONE
+            kwargs["ssl"] = ssl_context
 
         try:
             import inspect
 
             sig = inspect.signature(websockets.connect)
             if "extra_headers" in sig.parameters:
-                return websockets.connect(
-                    uri, extra_headers=headers, ssl=ssl_context
-                )
+                return websockets.connect(uri, extra_headers=headers, **kwargs)
         except Exception:
             # Fall back to legacy parameter name if inspection fails
             pass
-        return websockets.connect(
-            uri, additional_headers=headers, ssl=ssl_context
-        )
+        return websockets.connect(uri, additional_headers=headers, **kwargs)
 
     async def _fetch_heating(self):
         logger.info("Connecting to heating WS")
